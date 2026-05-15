@@ -4,11 +4,11 @@ nav_order: 1
 permalink: /
 ---
 
-# rawtiles format specification — version 0.1
+# rawtiles format specification — version 0.2
 
 **Status:** Provisional. The spec is in its v0.x phase: breaking changes between v0.x bumps MAY invalidate existing `pack_uuid`s and existing packs. v1.0 stabilizes the wire format once a second independent consumer has validated against this spec; until then, fixtures and on-disk packs are not guaranteed forward-compatible.
-**Date:** 2026-05-14.
-**Wire format version**: the `format_version` bytes in conforming packs are `(1, 0)`. The spec-document version (`0.1`) is distinct from the on-disk wire-format-version bytes (see § 13 for the version semantics).
+**Date:** 2026-05-15.
+**Wire format version**: the `format_version` bytes in conforming packs are `(1, 0)`. The spec-document version (`0.2`) is distinct from the on-disk wire-format-version bytes (see § 13 for the version semantics).
 
 This document defines the `.rawtiles` binary file format: a byte-level contract between writers (tile-pack builders) and readers (firmware, validators, debug tools, future device-side consumers). Conforming implementations on either side need only this document. The format is intended for offline tile delivery to constrained devices (watches, embedded displays, kiosks, e-readers) where bandwidth and decode budgets are tight.
 
@@ -296,6 +296,8 @@ Tag bytes 2–4 MAY be any printable ASCII; their case has no normative meaning.
 | `AFFN` | Affine matrix | 48 bytes: six little-endian IEEE-754 `f64` values `(a, b, c, d, e, f)` defining the 2×3 affine `[a b c; d e f]` that maps image-pixel coordinates `(u, v)` to geographic coordinates `(lon, lat)` in decimal degrees: `lon = a·u + b·v + c`, `lat = d·u + e·v + f`. Required when `projection = LocalLinear`. |
 
 **Cardinality.** Each upper-case (SDK-reserved) tag MUST appear at most once per pack, except `NAME` which MAY appear multiple times (one per locale, per § 7.4). Readers MUST reject packs containing duplicate upper-case tags.
+
+**Text normalisation.** Writers MUST emit text-bearing extension payloads (ATTR, SRCD, NAME `name`) in Unicode Normalization Form C (NFC, per [UAX #15](https://www.unicode.org/reports/tr15/)). Readers MUST NOT renormalise on read.
 
 Conditional requirements:
 
@@ -607,11 +609,12 @@ A conforming writer applied twice to the same logical inputs MUST produce byte-i
 
 This property is the writer's responsibility, not the reader's.
 
-**Concrete writer obligations.** The round-trip property reduces to three independent obligations that writers must satisfy together. A failure of any one re-opens the dedup gap:
+**Concrete writer obligations.** The round-trip property reduces to four independent obligations that writers must satisfy together. A failure of any one re-opens the dedup gap:
 
 1. **Preprocessing pipeline determinism.** The pipeline from source-file bytes to the pre-quantise RGB888 stream MUST be deterministic for a given writer (§ A.4). The spec does not prescribe a specific decode/resample/alpha-handling pipeline; it prescribes only that a writer's pipeline have a single byte-output for a given input. Two writers with different pipelines are allowed; they will yield different `content_hash`es and thus different `pack_uuid`s, which is the correct behavior.
 2. **Canonical quantiser.** § 9.1.1 + § 14.4 lock the RGB888 → ABGR2222 step. Writers MUST match the listed test-vector output; deviation indicates either a bug or a `quantiser_version` divergence requiring a descriptor bump.
 3. **`build_timestamp` determinism.** § 4.10 + § 12 #20. `build_timestamp` is in the CRC scope but NOT in the canonical descriptor, so wall-clock values produce byte-different packs with the same `pack_uuid`. Reproducibility-claiming writers MUST derive `build_timestamp` from logical inputs, not wall-clock.
+4. **Text normalisation.** § 7.3. Text-bearing extension payloads (ATTR, SRCD, NAME `name`) MUST be NFC-normalised before emission.
 
 ### 14.2 Cross-implementation gate
 
@@ -825,5 +828,6 @@ The intermediate SHA-1 is included so independent implementations can bisect a m
 | Spec version | Date | Notes |
 |---|---|---|
 | 0.1 | 2026-05-14 | Initial v0.x release. Wire format `(1, 0)` admits breaking changes between v0.x bumps until v1.0 stabilization. Supersedes the unreleased `1.0-rc1` draft. |
+| 0.2 | 2026-05-15 | § 7.3 + § 14.1: NFC normalisation is MUST-strength for writers emitting text-bearing extension payloads (ATTR, SRCD, NAME `name`). Writer-side tightening; no reader-rejection rules added, no wire-format change. v0.1 packs whose text fields were not NFC-normalised remain readable but are no longer cross-writer-reproducible under v0.2. |
 
 Note: the *spec document* version (`0.1`, `0.2`, `1.0`, `1.1`, …) is distinct from the *wire format* `format_version` bytes in the header. Multiple spec-document revisions can describe the same wire format `(1, 0)` if the changes are editorial or normative-clarification only.
