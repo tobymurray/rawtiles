@@ -1,0 +1,26 @@
+title: rawtiles
+description: Binary tile-pack format specification (v0.1, wire format 1.0)
+url: https://tobymurray.github.io
+baseurl: /rawtiles
+
+remote_theme: just-the-docs/just-the-docs
+
+plugins:
+  - jekyll-remote-theme
+
+color_scheme: dark
+search_enabled: true
+heading_anchors: true
+
+aux_links:
+  GitHub: https://github.com/tobymurray/rawtiles
+
+aux_links_new_tab: true
+
+exclude:
+  - README.md
+  - .gitignore
+  - Gemfile
+  - Gemfile.lock
+  - vendor
+  - .claude

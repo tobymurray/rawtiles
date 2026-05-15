@@ -1,3 +1,9 @@
+---
+title: Conformance checklist
+nav_order: 2
+permalink: /conformance/
+---
+
 # rawtiles conformance corpus — fixture checklist
 
 Tracking list of golden and negative fixtures for the rawtiles v1 (spec v0.1) reference corpus. Tick boxes as fixtures land.

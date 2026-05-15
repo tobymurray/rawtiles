@@ -1,3 +1,9 @@
+---
+title: Specification
+nav_order: 1
+permalink: /
+---
+
 # rawtiles format specification — version 0.1
 
 **Status:** Provisional. The spec is in its v0.x phase: breaking changes between v0.x bumps MAY invalidate existing `pack_uuid`s and existing packs. v1.0 stabilizes the wire format once a second independent consumer has validated against this spec; until then, fixtures and on-disk packs are not guaranteed forward-compatible.
