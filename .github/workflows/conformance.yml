@@ -1,0 +1,47 @@
+name: conformance
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  corpus-self-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install jsonschema (only external dep, for manifest validation)
+        run: pip install jsonschema
+
+      - name: Regenerate every fixture from its generator
+        working-directory: spec/conformance
+        run: python3 -m generators.generate
+
+      - name: Assert no drift between generator output and committed bytes
+        # If the generator produces anything different from what was committed
+        # — different .rawtiles bytes, different .hashes lines, different
+        # manifest entries — this step fails and the corpus is rejected.
+        run: git diff --exit-code -- spec/conformance
+
+      - name: Corpus self-check (manifest SHA-256s match files on disk)
+        working-directory: spec/conformance
+        run: python3 verify.py
+
+      - name: Validate manifest against schema
+        run: |
+          python3 -c "
+          import json, sys
+          from jsonschema import Draft202012Validator
+          schema = json.load(open('spec/conformance/manifest.schema.json'))
+          manifest = json.load(open('spec/conformance/manifest.json'))
+          Draft202012Validator.check_schema(schema)
+          errors = list(Draft202012Validator(schema).iter_errors(manifest))
+          for e in errors:
+              print(f'FAIL {list(e.absolute_path)}: {e.message}')
+          sys.exit(1 if errors else 0)
+          "
