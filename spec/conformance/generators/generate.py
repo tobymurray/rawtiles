@@ -24,6 +24,7 @@ if __package__ in (None, ""):
     from generators import (
         golden_empty_quadtree,
         golden_grid,
+        golden_singleimage_affn,
         golden_smallest,
         neg_02_bad_magic,
         neg_03_major_2,
@@ -42,6 +43,7 @@ else:
     from . import (
         golden_empty_quadtree,
         golden_grid,
+        golden_singleimage_affn,
         golden_smallest,
         neg_02_bad_magic,
         neg_03_major_2,
@@ -62,6 +64,7 @@ GENERATORS = [
     golden_smallest,
     golden_grid,
     golden_empty_quadtree,
+    golden_singleimage_affn,
     neg_02_bad_magic,
     neg_03_major_2,
     *neg_05_uuid_zero.FIXTURES,

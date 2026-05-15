@@ -50,6 +50,22 @@
       "hashes_sha256": "85ab039fdfce4e7766fb9b6d8d9c6921339518839c67a54282c6aeea5a3b0684"
     },
     {
+      "name": "golden-singleimage-affn",
+      "kind": "golden",
+      "path": "golden/golden-singleimage-affn.rawtiles",
+      "description": "(LocalLinear, SingleImage) pack with 1 tile at (0,0,0), 8×8 px, AFFN extension placing the image over the 2°×2° square at origin. The only v1 path that exercises § 7.3 AFFN encoding and § 4.9 LocalLinear bbox derivation.",
+      "spec_refs": [
+        "§ 4.9",
+        "§ 7.3",
+        "§ 8.6",
+        "§ 14.3"
+      ],
+      "expected_outcome": "accept",
+      "pack_sha256": "941a789af77db6eae09afd992c89576bdf3dbaad849f43d80824f239ccfb94cd",
+      "hashes_path": "golden/golden-singleimage-affn.hashes",
+      "hashes_sha256": "b908ff1c2f7ff48567a4a95f2bfc0da2839fc04ef03e07d221ed4a274a1f5c73"
+    },
+    {
       "name": "neg-02-bad-magic",
       "kind": "negative",
       "path": "negative/neg-02-bad-magic.rawtiles",
