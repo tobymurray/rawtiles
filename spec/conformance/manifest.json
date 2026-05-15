@@ -19,6 +19,23 @@
       "hashes_sha256": "78627ed359ed0ab84bad4cabcf66cd726901a6647346f7cb509793c9a315ed7a"
     },
     {
+      "name": "neg-02-bad-magic",
+      "kind": "negative",
+      "path": "negative/neg-02-bad-magic.rawtiles",
+      "description": "Pack with first byte zeroed (\\x00AWT); all other fields valid; CRC recomputed.",
+      "spec_refs": [
+        "§ 4.1"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "1de87f31aafe16f94d4ce140dff3a63a189cd00490c857c5ecb71101f170ed3a",
+      "expected_reject_rule": {
+        "rule_number": "2",
+        "summary": "first 4 bytes MUST be ASCII \"RAWT\" (0x52 0x41 0x57 0x54)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "header[0] zeroed (magic RAWT → \\x00AWT); CRC recomputed."
+    },
+    {
       "name": "neg-25-index-offset-296",
       "kind": "negative",
       "path": "negative/neg-25-index-offset-296.rawtiles",

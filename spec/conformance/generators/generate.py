@@ -21,13 +21,14 @@ from pathlib import Path
 # script (`python3 generators/generate.py`).
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-    from generators import golden_smallest, neg_25_index_offset_296
+    from generators import golden_smallest, neg_02_bad_magic, neg_25_index_offset_296
 else:
-    from . import golden_smallest, neg_25_index_offset_296
+    from . import golden_smallest, neg_02_bad_magic, neg_25_index_offset_296
 
 
 GENERATORS = [
     golden_smallest,
+    neg_02_bad_magic,
     neg_25_index_offset_296,
 ]
 SPEC_VERSION = "0.1"
