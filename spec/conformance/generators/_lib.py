@@ -73,16 +73,26 @@ def mutate_style_negative(
     spec_refs: list[str],
     rule_number: str,
     rule_summary: str,
-    derived_from: str = "golden-smallest",
+    derived_from: str | None = None,
+    base_module=None,
 ):
     """Generic factory for mutate-and-recrc negatives where the per-fixture
     description and mutation strings vary too much for an auto-derived factory.
 
     Returns a module-shaped object exposing NAME, KIND, build_pack, and
     manifest_entry — the same surface generate.py's GENERATORS list consumes.
+
+    `base_module` defaults to golden_smallest. Pass a different generator
+    module (e.g. golden_empty_quadtree) when a mutation needs a base whose
+    structure isolates the targeted rule. `derived_from` defaults to the
+    base's NAME.
     """
-    from . import golden_smallest as g  # local import: avoid circular module load
-    base_pack = g.build_pack()
+    if base_module is None:
+        from . import golden_smallest
+        base_module = golden_smallest
+    if derived_from is None:
+        derived_from = base_module.NAME
+    base_pack = base_module.build_pack()
 
     class _Fixture:
         NAME = name

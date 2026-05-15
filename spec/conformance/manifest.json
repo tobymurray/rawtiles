@@ -35,6 +35,21 @@
       "hashes_sha256": "1afac5f4cf668418a3a958e5ba9bb81e7b1554cba69cc0b3bb6c013ddaaf7eb6"
     },
     {
+      "name": "golden-empty-quadtree",
+      "kind": "golden",
+      "path": "golden/golden-empty-quadtree.rawtiles",
+      "description": "Metadata-only Quadtree pack (§ 8.6): tile_count = 0, no tile blob, no extension sections. The smallest legal Quadtree pack at 296 bytes.",
+      "spec_refs": [
+        "§ 4.13",
+        "§ 8.6",
+        "§ 14.3"
+      ],
+      "expected_outcome": "accept",
+      "pack_sha256": "cb2f57242267f1bdcef32354a14b617d70ce36eba94b7e3cbbf98768cf67987a",
+      "hashes_path": "golden/golden-empty-quadtree.hashes",
+      "hashes_sha256": "85ab039fdfce4e7766fb9b6d8d9c6921339518839c67a54282c6aeea5a3b0684"
+    },
+    {
       "name": "neg-02-bad-magic",
       "kind": "negative",
       "path": "negative/neg-02-bad-magic.rawtiles",
@@ -222,6 +237,23 @@
       "mutation": "compression byte (file offset 293) 0 → 1 (reserved, LZ4); CRC recomputed."
     },
     {
+      "name": "neg-09-tiledim-zero",
+      "kind": "negative",
+      "path": "negative/neg-09-tiledim-zero.rawtiles",
+      "description": "Pack with tile_dim_px = 0; § 4.7 requires non-zero. Built on the metadata-only base so § 11 #16 (length = tile_dim²) cannot also fire. CRC recomputed.",
+      "spec_refs": [
+        "§ 4.7"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "c4938044257cd0fac92775083fbe32487724970378eae137a77c50645b66bde3",
+      "expected_reject_rule": {
+        "rule_number": "9",
+        "summary": "tile_dim_px MUST be non-zero (§ 4.7)"
+      },
+      "derived_from": "golden-empty-quadtree",
+      "mutation": "header[60..62] (tile_dim_px, u16 LE) 8 → 0; CRC recomputed."
+    },
+    {
       "name": "neg-10a-zmax-24",
       "kind": "negative",
       "path": "negative/neg-10a-zmax-24.rawtiles",
@@ -237,6 +269,23 @@
       },
       "derived_from": "golden-smallest",
       "mutation": "header[63] (zoom_max) 0 → 24; CRC recomputed."
+    },
+    {
+      "name": "neg-10b-zmin-gt-zmax",
+      "kind": "negative",
+      "path": "negative/neg-10b-zmin-gt-zmax.rawtiles",
+      "description": "Pack with zoom_min = 1 and zoom_max = 0 (inverted). Built on the metadata-only base so § 11 #15 (entry z out of [zmin, zmax]) cannot also fire. CRC recomputed.",
+      "spec_refs": [
+        "§ 4.8"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "868047ea2f2760657730f3a4aa91cfe0c3e056ed11dfdbd0dfe9d256558c336a",
+      "expected_reject_rule": {
+        "rule_number": "10",
+        "summary": "zoom_max MUST be < 24 and zoom_min MUST be ≤ zoom_max (§ 4.8)"
+      },
+      "derived_from": "golden-empty-quadtree",
+      "mutation": "header[62] (zoom_min) 0 → 1; header[63] (zoom_max) stays at 0; CRC recomputed."
     },
     {
       "name": "neg-11a-lon-overflow",

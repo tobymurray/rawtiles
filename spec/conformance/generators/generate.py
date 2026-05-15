@@ -22,6 +22,7 @@ from pathlib import Path
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
     from generators import (
+        golden_empty_quadtree,
         golden_grid,
         golden_smallest,
         neg_02_bad_magic,
@@ -29,7 +30,9 @@ if __package__ in (None, ""):
         neg_05_uuid_zero,
         neg_06_parent_nonzero,
         neg_07_reserved_enums,
+        neg_09_tiledim_zero,
         neg_10a_zmax_24,
+        neg_10b_zmin_gt_zmax,
         neg_11_bbox,
         neg_12_entry_flags,
         neg_24_crc_flipped,
@@ -37,6 +40,7 @@ if __package__ in (None, ""):
     )
 else:
     from . import (
+        golden_empty_quadtree,
         golden_grid,
         golden_smallest,
         neg_02_bad_magic,
@@ -44,7 +48,9 @@ else:
         neg_05_uuid_zero,
         neg_06_parent_nonzero,
         neg_07_reserved_enums,
+        neg_09_tiledim_zero,
         neg_10a_zmax_24,
+        neg_10b_zmin_gt_zmax,
         neg_11_bbox,
         neg_12_entry_flags,
         neg_24_crc_flipped,
@@ -55,12 +61,15 @@ else:
 GENERATORS = [
     golden_smallest,
     golden_grid,
+    golden_empty_quadtree,
     neg_02_bad_magic,
     neg_03_major_2,
     *neg_05_uuid_zero.FIXTURES,
     *neg_06_parent_nonzero.FIXTURES,
     *neg_07_reserved_enums.FIXTURES,
+    *neg_09_tiledim_zero.FIXTURES,
     *neg_10a_zmax_24.FIXTURES,
+    *neg_10b_zmin_gt_zmax.FIXTURES,
     *neg_11_bbox.FIXTURES,
     *neg_12_entry_flags.FIXTURES,
     neg_24_crc_flipped,
