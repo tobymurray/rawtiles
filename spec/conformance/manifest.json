@@ -172,6 +172,74 @@
       "mutation": "compression byte (file offset 293) 0 → 1 (reserved, LZ4); CRC recomputed."
     },
     {
+      "name": "neg-11a-lon-overflow",
+      "kind": "negative",
+      "path": "negative/neg-11a-lon-overflow.rawtiles",
+      "description": "Pack with bbox.max_lon = +180_000_001, one µ° past the +180_000_000 limit; CRC recomputed.",
+      "spec_refs": [
+        "§ 4.9"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "ea81863263f11b25c1e5ec0ed688ae6000ab772bbc3e3c8e775dcd6e2bdbdf61",
+      "expected_reject_rule": {
+        "rule_number": "11",
+        "summary": "bbox values MUST lie within [-180M, +180M] µ° (lon) / [-90M, +90M] µ° (lat) and satisfy min ≤ max (§ 4.9)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "header[72..76] (bbox.max_lon) 180_000_000 → 180_000_001 (out of [-180M, +180M] µ° range); CRC recomputed."
+    },
+    {
+      "name": "neg-11b-lat-overflow",
+      "kind": "negative",
+      "path": "negative/neg-11b-lat-overflow.rawtiles",
+      "description": "Pack with bbox.min_lat = -90_000_001, one µ° past the -90_000_000 limit; CRC recomputed.",
+      "spec_refs": [
+        "§ 4.9"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "f684f980b968b2c53b09a46383dd07b97ca1c039b440cc0a50b06d32b0e72115",
+      "expected_reject_rule": {
+        "rule_number": "11",
+        "summary": "bbox values MUST lie within [-180M, +180M] µ° (lon) / [-90M, +90M] µ° (lat) and satisfy min ≤ max (§ 4.9)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "header[68..72] (bbox.min_lat) -85_051_129 → -90_000_001 (out of [-90M, +90M] µ° range); CRC recomputed."
+    },
+    {
+      "name": "neg-11c-lon-inverted",
+      "kind": "negative",
+      "path": "negative/neg-11c-lon-inverted.rawtiles",
+      "description": "Pack with bbox lon endpoints swapped (min_lon > max_lon); both values still in range, so inversion is the lone violation; CRC recomputed.",
+      "spec_refs": [
+        "§ 4.9"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "e26937058789317a099c93d82f2b49958b902ab62652399ab86cbf4fe92b3083",
+      "expected_reject_rule": {
+        "rule_number": "11",
+        "summary": "bbox values MUST lie within [-180M, +180M] µ° (lon) / [-90M, +90M] µ° (lat) and satisfy min ≤ max (§ 4.9)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "header[64..68] (bbox.min_lon) and header[72..76] (bbox.max_lon) swapped: min_lon -180_000_000 → +180_000_000, max_lon +180_000_000 → -180_000_000; CRC recomputed."
+    },
+    {
+      "name": "neg-11d-lat-inverted",
+      "kind": "negative",
+      "path": "negative/neg-11d-lat-inverted.rawtiles",
+      "description": "Pack with bbox lat endpoints swapped (min_lat > max_lat); both values still in range, so inversion is the lone violation; CRC recomputed.",
+      "spec_refs": [
+        "§ 4.9"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "7a4bbe141c107afd7de61ec740a9c9f3d504387a236391def28f0596de1e69a1",
+      "expected_reject_rule": {
+        "rule_number": "11",
+        "summary": "bbox values MUST lie within [-180M, +180M] µ° (lon) / [-90M, +90M] µ° (lat) and satisfy min ≤ max (§ 4.9)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "header[68..72] (bbox.min_lat) and header[76..80] (bbox.max_lat) swapped: min_lat -85_051_129 → +85_051_129, max_lat +85_051_129 → -85_051_129; CRC recomputed."
+    },
+    {
       "name": "neg-25-index-offset-296",
       "kind": "negative",
       "path": "negative/neg-25-index-offset-296.rawtiles",

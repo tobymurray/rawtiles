@@ -64,6 +64,50 @@ def negative_entry(
     }
 
 
+def mutate_style_negative(
+    *,
+    name: str,
+    mutate: Callable[[bytearray], None],
+    description: str,
+    mutation: str,
+    spec_refs: list[str],
+    rule_number: str,
+    rule_summary: str,
+    derived_from: str = "golden-smallest",
+):
+    """Generic factory for mutate-and-recrc negatives where the per-fixture
+    description and mutation strings vary too much for an auto-derived factory.
+
+    Returns a module-shaped object exposing NAME, KIND, build_pack, and
+    manifest_entry — the same surface generate.py's GENERATORS list consumes.
+    """
+    from . import golden_smallest as g  # local import: avoid circular module load
+    base_pack = g.build_pack()
+
+    class _Fixture:
+        NAME = name
+        KIND = "negative"
+
+        @staticmethod
+        def build_pack() -> bytes:
+            return mutate_and_recrc(base_pack, mutate)
+
+        @staticmethod
+        def manifest_entry(pack: bytes, hashes: str | None = None) -> dict:
+            return negative_entry(
+                name=name,
+                description=description,
+                spec_refs=spec_refs,
+                rule_number=rule_number,
+                rule_summary=rule_summary,
+                derived_from=derived_from,
+                mutation=mutation,
+                pack=pack,
+            )
+
+    return _Fixture
+
+
 _RULE_7_SUMMARY = (
     "any unknown pixel_format, projection, tile_addressing_scheme, "
     "tile_axis_convention, or compression byte MUST be rejected (§ 8)"

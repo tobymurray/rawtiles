@@ -26,6 +26,7 @@ if __package__ in (None, ""):
         neg_02_bad_magic,
         neg_03_major_2,
         neg_07_reserved_enums,
+        neg_11_bbox,
         neg_25_index_offset_296,
     )
 else:
@@ -34,6 +35,7 @@ else:
         neg_02_bad_magic,
         neg_03_major_2,
         neg_07_reserved_enums,
+        neg_11_bbox,
         neg_25_index_offset_296,
     )
 
@@ -43,6 +45,7 @@ GENERATORS = [
     neg_02_bad_magic,
     neg_03_major_2,
     *neg_07_reserved_enums.FIXTURES,
+    *neg_11_bbox.FIXTURES,
     neg_25_index_offset_296,
 ]
 SPEC_VERSION = "0.1"
