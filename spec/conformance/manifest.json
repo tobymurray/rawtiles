@@ -19,6 +19,22 @@
       "hashes_sha256": "78627ed359ed0ab84bad4cabcf66cd726901a6647346f7cb509793c9a315ed7a"
     },
     {
+      "name": "golden-grid",
+      "kind": "golden",
+      "path": "golden/golden-grid.rawtiles",
+      "description": "Regular 4×4 grid at z=2 (16 tiles, 8×8 px each), full WebMercator world coverage; no extension sections.",
+      "spec_refs": [
+        "§ 4.12",
+        "§ 5.2",
+        "§ 14.3",
+        "§ 14.5"
+      ],
+      "expected_outcome": "accept",
+      "pack_sha256": "40a370728f00d39d6c3ee43ad06fd1d21dfa52f09d46b57663467a5b46f5f876",
+      "hashes_path": "golden/golden-grid.hashes",
+      "hashes_sha256": "1afac5f4cf668418a3a958e5ba9bb81e7b1554cba69cc0b3bb6c013ddaaf7eb6"
+    },
+    {
       "name": "neg-02-bad-magic",
       "kind": "negative",
       "path": "negative/neg-02-bad-magic.rawtiles",

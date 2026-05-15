@@ -22,6 +22,7 @@ from pathlib import Path
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
     from generators import (
+        golden_grid,
         golden_smallest,
         neg_02_bad_magic,
         neg_03_major_2,
@@ -32,6 +33,7 @@ if __package__ in (None, ""):
     )
 else:
     from . import (
+        golden_grid,
         golden_smallest,
         neg_02_bad_magic,
         neg_03_major_2,
@@ -44,6 +46,7 @@ else:
 
 GENERATORS = [
     golden_smallest,
+    golden_grid,
     neg_02_bad_magic,
     neg_03_major_2,
     *neg_07_reserved_enums.FIXTURES,
