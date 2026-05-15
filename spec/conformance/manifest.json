@@ -53,6 +53,125 @@
       "mutation": "header[4] (format_version_major) 1 → 2; CRC recomputed."
     },
     {
+      "name": "neg-07a-pixfmt-0",
+      "kind": "negative",
+      "path": "negative/neg-07a-pixfmt-0.rawtiles",
+      "description": "Pack with pixel_format = 0 (reserved); all other fields valid; CRC recomputed.",
+      "spec_refs": [
+        "§ 8.1"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "148c678a7a11538a0eca10918692c944a3bcaee279850d552c2d4a1aaf57a0e5",
+      "expected_reject_rule": {
+        "rule_number": "7",
+        "summary": "any unknown pixel_format, projection, tile_addressing_scheme, tile_axis_convention, or compression byte MUST be rejected (§ 8)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "pixel_format byte (file offset 56) 1 → 0 (reserved); CRC recomputed."
+    },
+    {
+      "name": "neg-07b-pixfmt-2",
+      "kind": "negative",
+      "path": "negative/neg-07b-pixfmt-2.rawtiles",
+      "description": "Pack with pixel_format = 2 (reserved, L4 indexed); all other fields valid; CRC recomputed.",
+      "spec_refs": [
+        "§ 8.1"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "56bb91a5fc850f3b87db55f7dea6f09ff5495b0aad60d38767f848a5e024e00b",
+      "expected_reject_rule": {
+        "rule_number": "7",
+        "summary": "any unknown pixel_format, projection, tile_addressing_scheme, tile_axis_convention, or compression byte MUST be rejected (§ 8)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "pixel_format byte (file offset 56) 1 → 2 (reserved, L4 indexed); CRC recomputed."
+    },
+    {
+      "name": "neg-07c-proj-0",
+      "kind": "negative",
+      "path": "negative/neg-07c-proj-0.rawtiles",
+      "description": "Pack with projection = 0 (reserved); all other fields valid; CRC recomputed.",
+      "spec_refs": [
+        "§ 8.2"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "090805d6b1d7247802334a2dc4b65b36c3369d60def06a95336decf22adbcb4e",
+      "expected_reject_rule": {
+        "rule_number": "7",
+        "summary": "any unknown pixel_format, projection, tile_addressing_scheme, tile_axis_convention, or compression byte MUST be rejected (§ 8)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "projection byte (file offset 57) 1 → 0 (reserved); CRC recomputed."
+    },
+    {
+      "name": "neg-07d-proj-2",
+      "kind": "negative",
+      "path": "negative/neg-07d-proj-2.rawtiles",
+      "description": "Pack with projection = 2 (reserved, equirectangular); all other fields valid; CRC recomputed.",
+      "spec_refs": [
+        "§ 8.2"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "bba94d94716c588c0b44b705a847888b5dff904f1d03aa9395a195c389155fa9",
+      "expected_reject_rule": {
+        "rule_number": "7",
+        "summary": "any unknown pixel_format, projection, tile_addressing_scheme, tile_axis_convention, or compression byte MUST be rejected (§ 8)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "projection byte (file offset 57) 1 → 2 (reserved, equirectangular); CRC recomputed."
+    },
+    {
+      "name": "neg-07e-addr-0",
+      "kind": "negative",
+      "path": "negative/neg-07e-addr-0.rawtiles",
+      "description": "Pack with tile_addressing_scheme = 0 (reserved); all other fields valid; CRC recomputed.",
+      "spec_refs": [
+        "§ 8.3"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "03e054a9ee436797cd6bb1be4f03f496d732d9826725ff86518812669acce5d9",
+      "expected_reject_rule": {
+        "rule_number": "7",
+        "summary": "any unknown pixel_format, projection, tile_addressing_scheme, tile_axis_convention, or compression byte MUST be rejected (§ 8)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "tile_addressing_scheme byte (file offset 58) 1 → 0 (reserved); CRC recomputed."
+    },
+    {
+      "name": "neg-07f-axis-0",
+      "kind": "negative",
+      "path": "negative/neg-07f-axis-0.rawtiles",
+      "description": "Pack with tile_axis_convention = 0 (reserved); all other fields valid; CRC recomputed.",
+      "spec_refs": [
+        "§ 8.4"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "100fced381227a0256d2f38e32a4a887fb7b12d04374008b654a0e126a7d532c",
+      "expected_reject_rule": {
+        "rule_number": "7",
+        "summary": "any unknown pixel_format, projection, tile_addressing_scheme, tile_axis_convention, or compression byte MUST be rejected (§ 8)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "tile_axis_convention byte (file offset 59) 1 → 0 (reserved); CRC recomputed."
+    },
+    {
+      "name": "neg-07g-comp-1",
+      "kind": "negative",
+      "path": "negative/neg-07g-comp-1.rawtiles",
+      "description": "Pack with compression = 1 (reserved, LZ4); all other fields valid; CRC recomputed.",
+      "spec_refs": [
+        "§ 8.5"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "dad1068d90dd4484bb0f5239985d5421b02088add0d2bd03394e416eb0497c3e",
+      "expected_reject_rule": {
+        "rule_number": "7",
+        "summary": "any unknown pixel_format, projection, tile_addressing_scheme, tile_axis_convention, or compression byte MUST be rejected (§ 8)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "compression byte (file offset 293) 0 → 1 (reserved, LZ4); CRC recomputed."
+    },
+    {
       "name": "neg-25-index-offset-296",
       "kind": "negative",
       "path": "negative/neg-25-index-offset-296.rawtiles",

@@ -62,3 +62,65 @@ def negative_entry(
         "derived_from": derived_from,
         "mutation": mutation,
     }
+
+
+_RULE_7_SUMMARY = (
+    "any unknown pixel_format, projection, tile_addressing_scheme, "
+    "tile_axis_convention, or compression byte MUST be rejected (§ 8)"
+)
+
+
+def reserved_enum_fixture(
+    *,
+    suffix: str,
+    offset: int,
+    value: int,
+    field: str,
+    value_desc: str,
+    spec_ref: str,
+):
+    """Factory for § 11 #7 reserved-enum negative fixtures.
+
+    Each call returns a module-shaped object exposing NAME, KIND, build_pack,
+    and manifest_entry — the same surface generate.py expects of a generator
+    module. Mutation is a single-byte flip at an absolute file offset; the
+    previous byte value is read from golden-smallest so the manifest's
+    "prev → new" description stays in sync with the golden if it ever moves.
+    """
+    from . import golden_smallest as g  # local import: avoid circular module load
+
+    name = f"neg-07{suffix}"
+    base_pack = g.build_pack()
+    prev_value = base_pack[offset]
+
+    def _mut(buf: bytearray) -> None:
+        buf[offset] = value
+
+    class _Fixture:
+        NAME = name
+        KIND = "negative"
+
+        @staticmethod
+        def build_pack() -> bytes:
+            return mutate_and_recrc(base_pack, _mut)
+
+        @staticmethod
+        def manifest_entry(pack: bytes, hashes: str | None = None) -> dict:
+            return negative_entry(
+                name=name,
+                description=(
+                    f"Pack with {field} = {value} ({value_desc}); "
+                    "all other fields valid; CRC recomputed."
+                ),
+                spec_refs=[spec_ref],
+                rule_number="7",
+                rule_summary=_RULE_7_SUMMARY,
+                derived_from="golden-smallest",
+                mutation=(
+                    f"{field} byte (file offset {offset}) "
+                    f"{prev_value} → {value} ({value_desc}); CRC recomputed."
+                ),
+                pack=pack,
+            )
+
+    return _Fixture
