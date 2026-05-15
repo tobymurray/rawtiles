@@ -69,6 +69,40 @@
       "mutation": "header[4] (format_version_major) 1 → 2; CRC recomputed."
     },
     {
+      "name": "neg-05-uuid-zero",
+      "kind": "negative",
+      "path": "negative/neg-05-uuid-zero.rawtiles",
+      "description": "Pack with pack_uuid = 0 (the all-zero reserved sentinel); all other fields valid; CRC recomputed.",
+      "spec_refs": [
+        "§ 4.3"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "c165ec4bdadeb73b75753422cd36089ddca969cc05bab2b20080ad2c72077377",
+      "expected_reject_rule": {
+        "rule_number": "5",
+        "summary": "pack_uuid MUST NOT be all-zero (§ 4.3 reserves the value)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "header[8..24] (pack_uuid) sha256-derived → all-zero (16 zero bytes); CRC recomputed."
+    },
+    {
+      "name": "neg-06-parent-nonzero",
+      "kind": "negative",
+      "path": "negative/neg-06-parent-nonzero.rawtiles",
+      "description": "Pack with parent_uuid[0] = 1 (any non-zero value is reserved for future use in v1); CRC recomputed.",
+      "spec_refs": [
+        "§ 4.5"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "3e620348a85f6186be26173f3e2069130617e18ce9161c38c1e98800e8041ed2",
+      "expected_reject_rule": {
+        "rule_number": "6",
+        "summary": "parent_uuid MUST be all-zero in v1 (§ 4.5 reserves the field for future use)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "header[40] (parent_uuid byte 0) 0 → 1; CRC recomputed."
+    },
+    {
       "name": "neg-07a-pixfmt-0",
       "kind": "negative",
       "path": "negative/neg-07a-pixfmt-0.rawtiles",
@@ -188,6 +222,23 @@
       "mutation": "compression byte (file offset 293) 0 → 1 (reserved, LZ4); CRC recomputed."
     },
     {
+      "name": "neg-10a-zmax-24",
+      "kind": "negative",
+      "path": "negative/neg-10a-zmax-24.rawtiles",
+      "description": "Pack with zoom_max = 24 (§ 4.8 requires zoom_max < 24, the size of zoom_offsets[24]); CRC recomputed.",
+      "spec_refs": [
+        "§ 4.8"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "6a3a1382d42cfe2777ae49fa1a57a4c2cb021ff672f3ed85a8ce8d56a1f5cf07",
+      "expected_reject_rule": {
+        "rule_number": "10",
+        "summary": "zoom_max MUST be < 24 and zoom_min MUST be ≤ zoom_max (§ 4.8)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "header[63] (zoom_max) 0 → 24; CRC recomputed."
+    },
+    {
       "name": "neg-11a-lon-overflow",
       "kind": "negative",
       "path": "negative/neg-11a-lon-overflow.rawtiles",
@@ -254,6 +305,40 @@
       },
       "derived_from": "golden-smallest",
       "mutation": "header[68..72] (bbox.min_lat) and header[76..80] (bbox.max_lat) swapped: min_lat -85_051_129 → +85_051_129, max_lat +85_051_129 → -85_051_129; CRC recomputed."
+    },
+    {
+      "name": "neg-12a-flags-nonzero",
+      "kind": "negative",
+      "path": "negative/neg-12a-flags-nonzero.rawtiles",
+      "description": "Pack whose lone tile-index entry has flags = 1; v1 requires flags = 0; CRC recomputed.",
+      "spec_refs": [
+        "§ 5.2"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "7490605e0dd36212d110e7d93a58125c903ec27a9537bcf136c0090b1ca75c0f",
+      "expected_reject_rule": {
+        "rule_number": "12",
+        "summary": "tile-index entry flags (byte 2) and reserved (byte 3) MUST be 0 in v1 (§ 5.2)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "file[294] (tile-index entry 0 byte 2, flags) 0 → 1; CRC recomputed."
+    },
+    {
+      "name": "neg-12b-reserved-nonzero",
+      "kind": "negative",
+      "path": "negative/neg-12b-reserved-nonzero.rawtiles",
+      "description": "Pack whose lone tile-index entry has reserved = 1; v1 requires reserved = 0; CRC recomputed.",
+      "spec_refs": [
+        "§ 5.2"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "12c14844e1621d08cf08c9e619680c896041a0791e8fb99910557cb8fd11716c",
+      "expected_reject_rule": {
+        "rule_number": "12",
+        "summary": "tile-index entry flags (byte 2) and reserved (byte 3) MUST be 0 in v1 (§ 5.2)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "file[295] (tile-index entry 0 byte 3, reserved) 0 → 1; CRC recomputed."
     },
     {
       "name": "neg-24-crc-flipped",
