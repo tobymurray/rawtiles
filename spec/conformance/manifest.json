@@ -36,6 +36,23 @@
       "mutation": "header[0] zeroed (magic RAWT → \\x00AWT); CRC recomputed."
     },
     {
+      "name": "neg-03-major-2",
+      "kind": "negative",
+      "path": "negative/neg-03-major-2.rawtiles",
+      "description": "Pack with format_version_major = 2; all other fields valid; CRC recomputed.",
+      "spec_refs": [
+        "§ 4.2"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "d5946a80ba085e596fd75a192f22d7fc12bfd926140079aeeba5398b439176bf",
+      "expected_reject_rule": {
+        "rule_number": "3",
+        "summary": "format_version_major MUST be 1 in v1"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "header[4] (format_version_major) 1 → 2; CRC recomputed."
+    },
+    {
       "name": "neg-25-index-offset-296",
       "kind": "negative",
       "path": "negative/neg-25-index-offset-296.rawtiles",
