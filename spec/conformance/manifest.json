@@ -1,0 +1,22 @@
+{
+  "spec_version": "0.1",
+  "manifest_version": 1,
+  "generated_by": "rawtiles-conformance generators v1",
+  "fixtures": [
+    {
+      "name": "golden-smallest",
+      "kind": "golden",
+      "path": "golden/golden-smallest.rawtiles",
+      "description": "Minimum-legal non-empty pack: 1 tile at (0,0,0), 8×8 px, WebMercator/Quadtree/XYZ, no extension sections.",
+      "spec_refs": [
+        "§ 4.13",
+        "§ 8.6",
+        "§ 14.3"
+      ],
+      "expected_outcome": "accept",
+      "pack_sha256": "1e8de2e30d566e74ed26ef0b614f64b94d51b12860bc87ad878b04c19f17aa11",
+      "hashes_path": "golden/golden-smallest.hashes",
+      "hashes_sha256": "78627ed359ed0ab84bad4cabcf66cd726901a6647346f7cb509793c9a315ed7a"
+    }
+  ]
+}
