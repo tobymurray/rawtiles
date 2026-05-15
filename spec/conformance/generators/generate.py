@@ -2,14 +2,13 @@
 """Orchestrate rawtiles conformance fixture generation.
 
 Imports each per-fixture generator module, runs it, writes the .rawtiles and
-.hashes artifacts under conformance/, and assembles conformance/manifest.json.
+(for golden fixtures) .hashes artifacts under conformance/, and assembles
+conformance/manifest.json.
 
 Usage:
     python3 -m generators.generate
 or
     python3 generators/generate.py
-
-Both are run from the conformance/ directory.
 """
 
 from __future__ import annotations
@@ -22,12 +21,15 @@ from pathlib import Path
 # script (`python3 generators/generate.py`).
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-    from generators import golden_smallest
+    from generators import golden_smallest, neg_25_index_offset_296
 else:
-    from . import golden_smallest
+    from . import golden_smallest, neg_25_index_offset_296
 
 
-GENERATORS = [golden_smallest]
+GENERATORS = [
+    golden_smallest,
+    neg_25_index_offset_296,
+]
 SPEC_VERSION = "0.1"
 MANIFEST_VERSION = 1
 GENERATED_BY = "rawtiles-conformance generators v1"
@@ -35,19 +37,20 @@ GENERATED_BY = "rawtiles-conformance generators v1"
 
 def main() -> int:
     conformance_dir = Path(__file__).resolve().parent.parent
-    golden_dir = conformance_dir / "golden"
-    golden_dir.mkdir(parents=True, exist_ok=True)
+    (conformance_dir / "golden").mkdir(parents=True, exist_ok=True)
+    (conformance_dir / "negative").mkdir(parents=True, exist_ok=True)
 
     entries: list[dict] = []
     for gen in GENERATORS:
         pack = gen.build_pack()
-        hashes = gen.build_hashes(pack)
+        hashes = gen.build_hashes(pack) if gen.KIND == "golden" else None
         entry = gen.manifest_entry(pack, hashes)
 
         (conformance_dir / entry["path"]).write_bytes(pack)
-        (conformance_dir / entry["hashes_path"]).write_text(hashes)
+        if hashes is not None:
+            (conformance_dir / entry["hashes_path"]).write_text(hashes)
         entries.append(entry)
-        print(f"  {entry['name']:30s} {len(pack):>6d} B  sha256={entry['pack_sha256'][:12]}…")
+        print(f"  {entry['name']:30s} {len(pack):>6d} B  {entry['kind']:8s} sha256={entry['pack_sha256'][:12]}…")
 
     manifest = {
         "spec_version": SPEC_VERSION,

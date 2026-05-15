@@ -33,6 +33,7 @@ MERCATOR_POLE_UDEG = 85_051_129                   # § 4.9
 # --- fixture-specific choices -------------------------------------------------
 
 NAME = "golden-smallest"
+KIND = "golden"
 TILE_DIM_PX = 8
 TILE_BYTES = bytes([0xFF]) * (TILE_DIM_PX * TILE_DIM_PX)   # A=B=G=R=3 (opaque white)
 BUILD_TIMESTAMP = 0                               # § 4.10 "no freshness info"

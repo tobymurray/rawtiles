@@ -17,6 +17,23 @@
       "pack_sha256": "1e8de2e30d566e74ed26ef0b614f64b94d51b12860bc87ad878b04c19f17aa11",
       "hashes_path": "golden/golden-smallest.hashes",
       "hashes_sha256": "78627ed359ed0ab84bad4cabcf66cd726901a6647346f7cb509793c9a315ed7a"
+    },
+    {
+      "name": "neg-25-index-offset-296",
+      "kind": "negative",
+      "path": "negative/neg-25-index-offset-296.rawtiles",
+      "description": "Pack with index_offset = 296 instead of the v1.0-required 292.",
+      "spec_refs": [
+        "§ 4.11"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "bdd397fd37627c4d0c2ae4d6220ced9d0aa40c3e3e9fd7b8815d5e9429cc2b07",
+      "expected_reject_rule": {
+        "rule_number": "25",
+        "summary": "index_offset must equal 292 in v1.0"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "index_offset 292 → 296; tile-index region shifted right by 4 zero bytes; zoom_offsets[0].offset, entry.offset, extensions_offset updated; CRC recomputed."
     }
   ]
 }
