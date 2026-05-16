@@ -66,6 +66,60 @@
       "hashes_sha256": "b908ff1c2f7ff48567a4a95f2bfc0da2839fc04ef03e07d221ed4a274a1f5c73"
     },
     {
+      "name": "golden-attr",
+      "kind": "golden",
+      "path": "golden/golden-attr.rawtiles",
+      "description": "1-tile WebMercator pack with a single ATTR extension section (53-byte payload + 3 pad bytes) exercising § 7.1 extension framing, § 7.3 ATTR payload rules, and § 12.1 / A.4 multi-source string ordering (image-kind source attributed before url-kind source per the (zoom_min, zoom_max, kind, identity) sort key).",
+      "spec_refs": [
+        "§ 7.1",
+        "§ 7.3",
+        "§ 12.1",
+        "§ A.4",
+        "§ 14.3",
+        "§ 14.5"
+      ],
+      "expected_outcome": "accept",
+      "pack_sha256": "e2c985fdf2f92d7f63bda9b9565d2623eaac7afab6dce954efc251f4526cd3aa",
+      "hashes_path": "golden/golden-attr.hashes",
+      "hashes_sha256": "78627ed359ed0ab84bad4cabcf66cd726901a6647346f7cb509793c9a315ed7a"
+    },
+    {
+      "name": "golden-orientation",
+      "kind": "golden",
+      "path": "golden/golden-orientation.rawtiles",
+      "description": "1-tile WebMercator pack, 256×256 px, carrying a directional test pattern: RED/BLUE/GREEN/YELLOW 16-px edge stripes (top/bottom/left/right under XYZ), GREY interior, and 8×8 BLACK/WHITE/MAGENTA/CYAN corner dots (NW/NE/SW/SE) inset 8 px from the frame. The asymmetric pattern makes any vertical flip, transpose, or ABGR2222 channel-order bug visible by eye when the tile is rendered. Exercises § 6.2 row-major byte order, § 8.4 XYZ axis convention, and § 9.1 ABGR2222 saturated-palette encoding.",
+      "spec_refs": [
+        "§ 6.2",
+        "§ 8.4",
+        "§ 9.1",
+        "§ 14.3",
+        "§ 14.5"
+      ],
+      "expected_outcome": "accept",
+      "pack_sha256": "169ac6c61b9111f7865f45cd6a7c1974db30fc1d17ddc29d5d48e7dfe3a12ca9",
+      "hashes_path": "golden/golden-orientation.hashes",
+      "hashes_sha256": "a6fb67ff044967ab098c0da3339e447aa5148762ef8a03384581e85a8fb4aeb3"
+    },
+    {
+      "name": "golden-orientation-mosaic",
+      "kind": "golden",
+      "path": "golden/golden-orientation-mosaic.rawtiles",
+      "description": "4×4 mosaic at z=2 (16 tiles, 32×32 px each), full WebMercator world coverage. Each tile carries the same RED/BLUE/GREEN/YELLOW 4-px edge stripes + BLACK/WHITE/MAGENTA/CYAN 1-px corner dots as golden-orientation, plus a 24×24 interior fill whose byte encodes (x, y) as 0xD0 + (y << 2) + x. In the composed 128×128 mosaic the 16 interior bytes march 0xD0..0xDF in row-major order; tile-tile seams show paired BLUE/RED (horizontal) and YELLOW/GREEN (vertical) bands. Exercises § 5.2 multi-entry tile-index ordering, § 6.2 row-major byte order, § 8.4 XYZ axis (tile and pixel), and § 9.1 ABGR2222 encoding; complements golden-orientation (intra-tile) with inter-tile placement.",
+      "spec_refs": [
+        "§ 4.12",
+        "§ 5.2",
+        "§ 6.2",
+        "§ 8.4",
+        "§ 9.1",
+        "§ 14.3",
+        "§ 14.5"
+      ],
+      "expected_outcome": "accept",
+      "pack_sha256": "413ecb20955b7d179e64b8cd04301560c71934cf742c9ff385700fd5ef5a9162",
+      "hashes_path": "golden/golden-orientation-mosaic.hashes",
+      "hashes_sha256": "af3396d4e9df825461072da83a2e47093d977fb3ed3269fe0b41cb8b2b525758"
+    },
+    {
       "name": "neg-02-bad-magic",
       "kind": "negative",
       "path": "negative/neg-02-bad-magic.rawtiles",
@@ -406,6 +460,57 @@
       "mutation": "file[295] (tile-index entry 0 byte 3, reserved) 0 → 1; CRC recomputed."
     },
     {
+      "name": "neg-19a-section-overruns",
+      "kind": "negative",
+      "path": "negative/neg-19a-section-overruns.rawtiles",
+      "description": "Pack with ATTR section's length field bumped 53 → 60; the section's declared extent now exceeds file_size − 4. All other bytes unchanged; CRC recomputed.",
+      "spec_refs": [
+        "§ 7.1"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "709ce48e837f6a482007938167185b21149055dabdde5a193f37e97279eb3d56",
+      "expected_reject_rule": {
+        "rule_number": "19",
+        "summary": "extension section's extent (tag + length + payload + alignment pad) MUST lie within [extensions_offset, file_size − 4); pad bytes MUST be 0x00; no stranded bytes may exist between the last section and the CRC footer (§ 7.1)"
+      },
+      "derived_from": "golden-attr",
+      "mutation": "bytes 380..384 (ATTR length field) 53 → 60; CRC recomputed."
+    },
+    {
+      "name": "neg-19b-section-padding-nonzero",
+      "kind": "negative",
+      "path": "negative/neg-19b-section-padding-nonzero.rawtiles",
+      "description": "Pack with the ATTR section's first alignment-pad byte set to 0xFF (was 0x00). Payload and length unchanged; CRC recomputed.",
+      "spec_refs": [
+        "§ 7.1"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "0b7e9e5b8c338e7df9b4b0411b4fd6000f15adc0da4f8dc7a66c0ecaa500bde5",
+      "expected_reject_rule": {
+        "rule_number": "19",
+        "summary": "extension section's extent (tag + length + payload + alignment pad) MUST lie within [extensions_offset, file_size − 4); pad bytes MUST be 0x00; no stranded bytes may exist between the last section and the CRC footer (§ 7.1)"
+      },
+      "derived_from": "golden-attr",
+      "mutation": "byte 437 (first of ATTR's 3 pad bytes) 0x00 → 0xFF; CRC recomputed."
+    },
+    {
+      "name": "neg-19c-stranded-bytes",
+      "kind": "negative",
+      "path": "negative/neg-19c-stranded-bytes.rawtiles",
+      "description": "Pack derived from golden-attr by inserting 4 zero bytes between the ATTR section's padded end and the CRC footer. The ATTR section is structurally intact; the violation is the 4 stranded bytes between the section and the (now-relocated) CRC footer. file_size 444 → 448; CRC recomputed.",
+      "spec_refs": [
+        "§ 7.1"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "de34f3ecf07144b50b8cb0c73e7b8e0b7d99f850edcba25104bd03164060258d",
+      "expected_reject_rule": {
+        "rule_number": "19",
+        "summary": "extension section's extent (tag + length + payload + alignment pad) MUST lie within [extensions_offset, file_size − 4); pad bytes MUST be 0x00; no stranded bytes may exist between the last section and the CRC footer (§ 7.1)"
+      },
+      "derived_from": "golden-attr",
+      "mutation": "Inserted 4 zero bytes between the ATTR section's padded end (byte 440) and the CRC footer; file_size 444 → 448; CRC recomputed over the new body."
+    },
+    {
       "name": "neg-24-crc-flipped",
       "kind": "negative",
       "path": "negative/neg-24-crc-flipped.rawtiles",
@@ -438,6 +543,143 @@
       },
       "derived_from": "golden-smallest",
       "mutation": "index_offset 292 → 296; tile-index region shifted right by 4 zero bytes; zoom_offsets[0].offset, entry.offset, extensions_offset updated; CRC recomputed."
+    },
+    {
+      "name": "neg-29a-duplicate-uppercase",
+      "kind": "negative",
+      "path": "negative/neg-29a-duplicate-uppercase.rawtiles",
+      "description": "Pack derived from golden-attr by appending a second ATTR section (payload 'Other source', 12 bytes, 4-aligned). Both sections are individually well-formed; the violation is the duplicate upper-case tag. file_size 444 → 464; CRC recomputed.",
+      "spec_refs": [
+        "§ 7.3",
+        "§ 11"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "0cec75af2d41c79aeca4e7f88bf6b96bab412770bc7bc50f4350c0058421ae2e",
+      "expected_reject_rule": {
+        "rule_number": "29",
+        "summary": "each upper-case (SDK-reserved) extension tag MUST appear at most once per pack, except NAME (which has its own bcp47_tag-based uniqueness rule per § 7.4)"
+      },
+      "derived_from": "golden-attr",
+      "mutation": "Appended a second ATTR section with payload 'Other source' (12 bytes) directly after the existing ATTR section; file_size 444 → 464; CRC recomputed."
+    },
+    {
+      "name": "neg-38a-srcd-bad-utf8",
+      "kind": "negative",
+      "path": "negative/neg-38a-srcd-bad-utf8.rawtiles",
+      "description": "Pack with golden-attr's ATTR section re-tagged 'SRCD' and the lead byte 0xC2 of the first '©' codepoint set to 0xFF, making the SRCD payload invalid UTF-8; CRC recomputed.",
+      "spec_refs": [
+        "§ 7.3"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "7d9be990c174aa170375a3272e21920b55dd989b9dc0467ca6e0e12ad78eb8b9",
+      "expected_reject_rule": {
+        "rule_number": "38",
+        "summary": "SRCD and ATTR payloads MUST be valid UTF-8; ATTR additionally MUST contain no C0 control codepoint other than LF, no DEL (U+007F), no NEL (U+0085), no LS (U+2028), and no PS (U+2029) (§ 7.3)"
+      },
+      "derived_from": "golden-attr",
+      "mutation": "bytes 376..380 (section tag) 'ATTR' → 'SRCD'; byte 400 (payload[16], lead byte of first '©') 0xC2 → 0xFF; CRC recomputed."
+    },
+    {
+      "name": "neg-38b-attr-bad-utf8",
+      "kind": "negative",
+      "path": "negative/neg-38b-attr-bad-utf8.rawtiles",
+      "description": "Pack with the lead byte 0xC2 of the first '©' codepoint in ATTR's payload set to 0xFF, making the payload invalid UTF-8; CRC recomputed.",
+      "spec_refs": [
+        "§ 7.3"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "a998d4f52f74dda52fa1bd230509f2299ad139327b65e71d9e2ef6adbb6f2155",
+      "expected_reject_rule": {
+        "rule_number": "38",
+        "summary": "SRCD and ATTR payloads MUST be valid UTF-8; ATTR additionally MUST contain no C0 control codepoint other than LF, no DEL (U+007F), no NEL (U+0085), no LS (U+2028), and no PS (U+2029) (§ 7.3)"
+      },
+      "derived_from": "golden-attr",
+      "mutation": "byte 400 (payload[16], lead byte of first '©') 0xC2 → 0xFF; CRC recomputed."
+    },
+    {
+      "name": "neg-38c-attr-crlf",
+      "kind": "negative",
+      "path": "negative/neg-38c-attr-crlf.rawtiles",
+      "description": "Pack with ATTR payload's '6' (last byte of '2026', immediately preceding the LF separator) set to CR, producing a CRLF line break; CRC recomputed.",
+      "spec_refs": [
+        "§ 7.3"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "19ae5b82bb0a8826f9efcbed05042b6ea7a85ef2631679dd6916ef60d88c6c28",
+      "expected_reject_rule": {
+        "rule_number": "38",
+        "summary": "SRCD and ATTR payloads MUST be valid UTF-8; ATTR additionally MUST contain no C0 control codepoint other than LF, no DEL (U+007F), no NEL (U+0085), no LS (U+2028), and no PS (U+2029) (§ 7.3)"
+      },
+      "derived_from": "golden-attr",
+      "mutation": "byte 406 (payload[22], '6' before the LF separator) 0x36 → 0x0D; CRC recomputed."
+    },
+    {
+      "name": "neg-38d-attr-bare-cr",
+      "kind": "negative",
+      "path": "negative/neg-38d-attr-bare-cr.rawtiles",
+      "description": "Pack with an ATTR payload space byte (not adjacent to the LF separator) set to CR, producing a bare CR; CRC recomputed.",
+      "spec_refs": [
+        "§ 7.3"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "4f5e7b23a3d9ba245968b12f3ee8774d3206bb9ac2d530ca264dc1119bb672bc",
+      "expected_reject_rule": {
+        "rule_number": "38",
+        "summary": "SRCD and ATTR payloads MUST be valid UTF-8; ATTR additionally MUST contain no C0 control codepoint other than LF, no DEL (U+007F), no NEL (U+0085), no LS (U+2028), and no PS (U+2029) (§ 7.3)"
+      },
+      "derived_from": "golden-attr",
+      "mutation": "byte 399 (payload[15], space before first '©') 0x20 → 0x0D; CRC recomputed."
+    },
+    {
+      "name": "neg-38e-attr-c0-control",
+      "kind": "negative",
+      "path": "negative/neg-38e-attr-c0-control.rawtiles",
+      "description": "Pack with an ATTR payload space byte set to BEL (0x07), a C0 control codepoint other than LF; CRC recomputed.",
+      "spec_refs": [
+        "§ 7.3"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "1b1ff5938e53747c4b2987ad29875fc471dea99db0ced82604edcb7f87ac7322",
+      "expected_reject_rule": {
+        "rule_number": "38",
+        "summary": "SRCD and ATTR payloads MUST be valid UTF-8; ATTR additionally MUST contain no C0 control codepoint other than LF, no DEL (U+007F), no NEL (U+0085), no LS (U+2028), and no PS (U+2029) (§ 7.3)"
+      },
+      "derived_from": "golden-attr",
+      "mutation": "byte 399 (payload[15], space before first '©') 0x20 → 0x07 (BEL); CRC recomputed."
+    },
+    {
+      "name": "neg-38f-attr-nel",
+      "kind": "negative",
+      "path": "negative/neg-38f-attr-nel.rawtiles",
+      "description": "Pack with the trailing byte 0xA9 of the first '©' set to 0x85, yielding 0xC2 0x85 (U+0085, NEL) in ATTR's payload; CRC recomputed.",
+      "spec_refs": [
+        "§ 7.3"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "9c789f56d937d357ea2d31c898a136d894450e35087a9c25bc63edb5ff1ce05f",
+      "expected_reject_rule": {
+        "rule_number": "38",
+        "summary": "SRCD and ATTR payloads MUST be valid UTF-8; ATTR additionally MUST contain no C0 control codepoint other than LF, no DEL (U+007F), no NEL (U+0085), no LS (U+2028), and no PS (U+2029) (§ 7.3)"
+      },
+      "derived_from": "golden-attr",
+      "mutation": "byte 401 (payload[17], trailer of first '©') 0xA9 → 0x85; combined with the unchanged lead 0xC2 this encodes U+0085 (NEL); CRC recomputed."
+    },
+    {
+      "name": "neg-38g-attr-ls",
+      "kind": "negative",
+      "path": "negative/neg-38g-attr-ls.rawtiles",
+      "description": "Pack with bytes 0xC2 0xA9 0x20 (first '©' plus the following space) in ATTR's payload replaced by 0xE2 0x80 0xA8 (U+2028, LINE SEPARATOR); CRC recomputed.",
+      "spec_refs": [
+        "§ 7.3"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "1fa46cede08b186d2e5c72e3ce4ed3316c20333ed5a1b1e8b499602fac03fcdc",
+      "expected_reject_rule": {
+        "rule_number": "38",
+        "summary": "SRCD and ATTR payloads MUST be valid UTF-8; ATTR additionally MUST contain no C0 control codepoint other than LF, no DEL (U+007F), no NEL (U+0085), no LS (U+2028), and no PS (U+2029) (§ 7.3)"
+      },
+      "derived_from": "golden-attr",
+      "mutation": "bytes 400..403 (payload[16..19], first '©' UTF-8 plus the following space) 0xC2 0xA9 0x20 → 0xE2 0x80 0xA8 (U+2028); CRC recomputed."
     }
   ]
 }

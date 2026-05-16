@@ -22,8 +22,11 @@ from pathlib import Path
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
     from generators import (
+        golden_attr,
         golden_empty_quadtree,
         golden_grid,
+        golden_orientation,
+        golden_orientation_mosaic,
         golden_singleimage_affn,
         golden_smallest,
         neg_02_bad_magic,
@@ -36,13 +39,20 @@ if __package__ in (None, ""):
         neg_10b_zmin_gt_zmax,
         neg_11_bbox,
         neg_12_entry_flags,
+        neg_19_framing,
+        neg_19c_stranded,
         neg_24_crc_flipped,
         neg_25_index_offset_296,
+        neg_29a_duplicate_attr,
+        neg_38_attr_text,
     )
 else:
     from . import (
+        golden_attr,
         golden_empty_quadtree,
         golden_grid,
+        golden_orientation,
+        golden_orientation_mosaic,
         golden_singleimage_affn,
         golden_smallest,
         neg_02_bad_magic,
@@ -55,8 +65,12 @@ else:
         neg_10b_zmin_gt_zmax,
         neg_11_bbox,
         neg_12_entry_flags,
+        neg_19_framing,
+        neg_19c_stranded,
         neg_24_crc_flipped,
         neg_25_index_offset_296,
+        neg_29a_duplicate_attr,
+        neg_38_attr_text,
     )
 
 
@@ -65,6 +79,9 @@ GENERATORS = [
     golden_grid,
     golden_empty_quadtree,
     golden_singleimage_affn,
+    golden_attr,
+    golden_orientation,
+    golden_orientation_mosaic,
     neg_02_bad_magic,
     neg_03_major_2,
     *neg_05_uuid_zero.FIXTURES,
@@ -75,8 +92,12 @@ GENERATORS = [
     *neg_10b_zmin_gt_zmax.FIXTURES,
     *neg_11_bbox.FIXTURES,
     *neg_12_entry_flags.FIXTURES,
+    *neg_19_framing.FIXTURES,
+    neg_19c_stranded,
     neg_24_crc_flipped,
     neg_25_index_offset_296,
+    neg_29a_duplicate_attr,
+    *neg_38_attr_text.FIXTURES,
 ]
 SPEC_VERSION = "0.1"
 MANIFEST_VERSION = 1

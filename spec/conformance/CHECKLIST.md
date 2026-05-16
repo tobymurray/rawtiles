@@ -31,7 +31,7 @@ Each pack ships with a sibling `<pack>.hashes` file per § 14.5.
 ### Named in spec § 14.5
 - [ ] `golden-grid.rawtiles` — regular full grid at a single zoom; the "largest single-zoom layout" of § 14.3
 - [ ] `golden-pyramid.rawtiles` — multi-zoom; exercises every populated slot of the `zoom_offsets[24]` indirection
-- [ ] `golden-attr.rawtiles` — exercises extension framing/padding and ATTR multi-source ordering per § 12.1 / Appendix A.4
+- [x] `golden-attr.rawtiles` — exercises extension framing/padding and ATTR multi-source ordering per § 12.1 / Appendix A.4
 - [ ] `golden-png-to-pack-1tile.rawtiles` — end-to-end PNG → quantiser → pack pipeline; one tile
 - [ ] `golden-png-to-pack-5tiles.rawtiles` — same pipeline, multi-tile; pins resample/alpha-handling output
 
@@ -44,6 +44,8 @@ Each pack ships with a sibling `<pack>.hashes` file per § 14.5.
 - [ ] `golden-supersedes.rawtiles` — non-zero `supersedes_uuid`
 - [ ] `golden-zmax.rawtiles` — tile at `z = 23` (max legal zoom) and `(x, y)` near `2^23 − 1`
 - [ ] `golden-canonical-uuid.rawtiles` — pack whose `pack_uuid` is derived per Appendix A, verifying the derivation pipeline against the § A.5 worked example methodology
+- [x] `golden-orientation.rawtiles` — 256×256 directional test tile (RED/BLUE/GREEN/YELLOW edge stripes + BLACK/WHITE/MAGENTA/CYAN corner dots) covering § 6.2 row order, § 8.4 XYZ axis, and § 9.1 ABGR2222 saturated palette; lets a renderer detect intra-tile orientation-pipeline bugs by eye
+- [x] `golden-orientation-mosaic.rawtiles` — 4×4 grid at z=2, 32×32 px tiles; same intra-tile pattern as `golden-orientation` plus a 24×24 interior byte encoding `0xD0 + (y << 2) + x` per tile, so the composed 128×128 mosaic marches the 16 interior colors `0xD0..0xDF` in row-major order; catches inter-tile placement bugs (x/y swap, row inversion) that `golden-orientation` cannot see
 
 ### Accept-path positives (cover § 11 rules that are accept, not reject)
 - [ ] `golden-minor-1.rawtiles` — `format_version = (1, 1)`; covers § 11 #4 (readers MUST accept) plus a v1.x-introduced ancillary tag for plausibility
@@ -119,15 +121,15 @@ Each fixture differs from a known-good golden by **one** byte/field. Every file 
 - [ ] `neg-18d-extoff-wrong-sum.rawtiles` — `extensions_offset` doesn't match the padded-length sum
 
 ### Extension framing (§ 7.1) [#19]
-- [ ] `neg-19a-section-overruns.rawtiles` — section `tag+8+length+pad` extends past `file_size − 4`
-- [ ] `neg-19b-section-padding-nonzero.rawtiles` — section's trailing pad byte ≠ 0x00
-- [ ] `neg-19c-stranded-bytes.rawtiles` — bytes between last section and CRC footer
+- [x] `neg-19a-section-overruns.rawtiles` — section `tag+8+length+pad` extends past `file_size − 4`
+- [x] `neg-19b-section-padding-nonzero.rawtiles` — section's trailing pad byte ≠ 0x00
+- [x] `neg-19c-stranded-bytes.rawtiles` — bytes between last section and CRC footer
 
 ### Extension tag rules (§ 7.2 / 7.3) [#20, #27, #28, #29]
 - [ ] `neg-20-unknown-uppercase-tag.rawtiles` — unknown SDK-reserved tag (e.g. `XYZQ`) [#20]
 - [ ] `neg-27-tag-digit-first.rawtiles` — first byte is `'1'` (0x31), digit [#27]
 - [ ] `neg-28-tag-nonprintable.rawtiles` — tag bytes 2–4 contain a control byte [#28]
-- [ ] `neg-29a-duplicate-uppercase.rawtiles` — two `ATTR` sections [#29]
+- [x] `neg-29a-duplicate-uppercase.rawtiles` — two `ATTR` sections [#29]
 - [ ] `neg-29b-duplicate-name-locale.rawtiles` — two `NAME` sections with identical `bcp47_tag` [#29]
 
 ### AFFN (§ 7.3) [#22, #34, #35, #36]
@@ -145,15 +147,15 @@ Each fixture differs from a known-good golden by **one** byte/field. Every file 
 - [ ] `neg-37c-name-bcp47-3-letter.rawtiles` — `bcp47_tag = "eng"` (3-letter, outside v1 subset) [#37]
 
 ### SRCD / ATTR text rules (§ 7.3) [#38]
-- [ ] `neg-38a-srcd-bad-utf8.rawtiles` — SRCD payload contains invalid UTF-8
-- [ ] `neg-38b-attr-bad-utf8.rawtiles` — ATTR payload contains invalid UTF-8
-- [ ] `neg-38c-attr-crlf.rawtiles` — ATTR contains a CRLF line break
-- [ ] `neg-38d-attr-bare-cr.rawtiles` — ATTR contains a bare CR (0x0D)
-- [ ] `neg-38e-attr-c0-control.rawtiles` — ATTR contains a C0 control byte (e.g. 0x07)
-- [ ] `neg-38f-attr-nel.rawtiles` — ATTR contains U+0085 (NEL)
-- [ ] `neg-38g-attr-ls.rawtiles` — ATTR contains U+2028 (line separator)
-- [ ] `neg-38h-attr-trailing-lf.rawtiles` — ATTR ends with a trailing LF
-- [ ] `neg-38i-attr-empty.rawtiles` — ATTR with zero-length payload
+- [x] `neg-38a-srcd-bad-utf8.rawtiles` — SRCD payload contains invalid UTF-8
+- [x] `neg-38b-attr-bad-utf8.rawtiles` — ATTR payload contains invalid UTF-8
+- [x] `neg-38c-attr-crlf.rawtiles` — ATTR contains a CRLF line break
+- [x] `neg-38d-attr-bare-cr.rawtiles` — ATTR contains a bare CR (0x0D)
+- [x] `neg-38e-attr-c0-control.rawtiles` — ATTR contains a C0 control byte (e.g. 0x07)
+- [x] `neg-38f-attr-nel.rawtiles` — ATTR contains U+0085 (NEL)
+- [x] `neg-38g-attr-ls.rawtiles` — ATTR contains U+2028 (line separator)
+- [ ] `neg-38h-attr-trailing-lf.rawtiles` — ATTR ends with a trailing LF *(blocked: § 11 #38 as currently worded explicitly excludes U+000A; needs spec amendment to restate § 7.3's no-trailing-LF rule)*
+- [ ] `neg-38i-attr-empty.rawtiles` — ATTR with zero-length payload *(blocked: § 11 #38 as currently worded covers UTF-8 + forbidden codepoints only; needs spec amendment to restate § 7.3's non-zero-length rule)*
 
 ### SingleImage shape (§ 8.6) [#23]
 Pick representative violations rather than every sub-condition — one fixture per failure mode that the others reduce to:
