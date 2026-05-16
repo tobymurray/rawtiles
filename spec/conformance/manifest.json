@@ -460,6 +460,24 @@
       "mutation": "file[295] (tile-index entry 0 byte 3, reserved) 0 → 1; CRC recomputed."
     },
     {
+      "name": "neg-16-length-mismatch",
+      "kind": "negative",
+      "path": "negative/neg-16-length-mismatch.rawtiles",
+      "description": "Pack with the lone tile-index entry's `length` field decremented 64 → 63. For ABGR2222/None the format-implied tile size is tile_dim_px² = 64, so the entry's declared length no longer matches. All other fields valid; CRC recomputed.",
+      "spec_refs": [
+        "§ 5.2",
+        "§ 6.2"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "702147d14834314b9e3db99671e1fe0f00335e303fdf27dcbd0849a70c800443",
+      "expected_reject_rule": {
+        "rule_number": "16",
+        "summary": "tile-index entry `length` MUST equal tile_dim_px² for v1's only pixel/compression pair (ABGR2222 / None) per § 11 #16"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "file[308] (tile-index entry 0 `length` LSB) 0x40 → 0x3F (length 64 → 63); CRC recomputed."
+    },
+    {
       "name": "neg-19a-section-overruns",
       "kind": "negative",
       "path": "negative/neg-19a-section-overruns.rawtiles",
@@ -511,6 +529,23 @@
       "mutation": "Inserted 4 zero bytes between the ATTR section's padded end (byte 440) and the CRC footer; file_size 444 → 448; CRC recomputed over the new body."
     },
     {
+      "name": "neg-20-unknown-uppercase-tag",
+      "kind": "negative",
+      "path": "negative/neg-20-unknown-uppercase-tag.rawtiles",
+      "description": "Pack with the ATTR section's tag renamed to `XYZQ` — an unknown 4-byte uppercase ASCII tag, not among v1's SDK-reserved set {NAME, SRCD, ATTR, AFFN}. Framing/length/padding all valid; CRC recomputed.",
+      "spec_refs": [
+        "§ 7.2"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "d86fb0399ed5ddacedaaa46d85ea236b2229bfd4304309b7373246a08499f54a",
+      "expected_reject_rule": {
+        "rule_number": "20",
+        "summary": "unknown extension tag whose first byte is upper-case ASCII (A–Z) MUST be rejected (§ 7.2 + § 11 #20)"
+      },
+      "derived_from": "golden-attr",
+      "mutation": "bytes 376..380 (section tag) `ATTR` → `XYZQ`; CRC recomputed."
+    },
+    {
       "name": "neg-24-crc-flipped",
       "kind": "negative",
       "path": "negative/neg-24-crc-flipped.rawtiles",
@@ -543,6 +578,40 @@
       },
       "derived_from": "golden-smallest",
       "mutation": "index_offset 292 → 296; tile-index region shifted right by 4 zero bytes; zoom_offsets[0].offset, entry.offset, extensions_offset updated; CRC recomputed."
+    },
+    {
+      "name": "neg-27-tag-digit-first",
+      "kind": "negative",
+      "path": "negative/neg-27-tag-digit-first.rawtiles",
+      "description": "Pack with the ATTR section's tag's first byte set to '1' (0x31), yielding the tag `1TTR`. Bytes 2–4 are still printable ASCII so rule #28 doesn't fire; the digit first byte is outside [A-Z, a-z] so rule #20 (unknown uppercase) doesn't apply. CRC recomputed.",
+      "spec_refs": [
+        "§ 7.2"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "25882e1e14eda25b1571d0c0d0b15a39cc330119facce701e2af5ee8ea5d2407",
+      "expected_reject_rule": {
+        "rule_number": "27",
+        "summary": "extension tag's first byte MUST be in [A-Z, a-z]; any other byte (digit, punctuation, control char, non-ASCII) MUST be rejected (§ 7.2 + § 11 #27)"
+      },
+      "derived_from": "golden-attr",
+      "mutation": "byte 376 (section tag byte 1) 0x41 ('A') → 0x31 ('1'); tag becomes `1TTR`; CRC recomputed."
+    },
+    {
+      "name": "neg-28-tag-nonprintable",
+      "kind": "negative",
+      "path": "negative/neg-28-tag-nonprintable.rawtiles",
+      "description": "Pack with the ATTR section's tag rewritten as `a\\x01TR`: byte 1 lower-cased to 'a' (dodges rule #20's upper-case-first scope) and byte 2 replaced with SOH (0x01), a C0 control character outside the [0x20, 0x7E] printable-ASCII range required for tag bytes 2–4. First byte 'a' is in [A-Z, a-z] so rule #27 also stays quiet. CRC recomputed.",
+      "spec_refs": [
+        "§ 7.2"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "36ba4a349b3ee21cbe5659930d79ef4700e934ff9ff85e49a6a9f0c6341a74e7",
+      "expected_reject_rule": {
+        "rule_number": "28",
+        "summary": "extension tag bytes 2–4 MUST be printable ASCII (0x20–0x7E); any other byte (control char, non-ASCII) MUST be rejected (§ 7.2 + § 11 #28)"
+      },
+      "derived_from": "golden-attr",
+      "mutation": "byte 376 (section tag byte 1) 0x41 ('A') → 0x61 ('a'); byte 377 (section tag byte 2) 0x54 ('T') → 0x01 (SOH); tag becomes `a\\x01TR`; CRC recomputed."
     },
     {
       "name": "neg-29a-duplicate-uppercase",

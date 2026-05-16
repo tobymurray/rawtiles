@@ -29,17 +29,17 @@ Numbers in `[brackets]` reference § 11 rejection rules.
 Each pack ships with a sibling `<pack>.hashes` file per § 14.5.
 
 ### Named in spec § 14.5
-- [ ] `golden-grid.rawtiles` — regular full grid at a single zoom; the "largest single-zoom layout" of § 14.3
+- [x] `golden-grid.rawtiles` — regular full grid at a single zoom; the "largest single-zoom layout" of § 14.3
 - [ ] `golden-pyramid.rawtiles` — multi-zoom; exercises every populated slot of the `zoom_offsets[24]` indirection
 - [x] `golden-attr.rawtiles` — exercises extension framing/padding and ATTR multi-source ordering per § 12.1 / Appendix A.4
 - [ ] `golden-png-to-pack-1tile.rawtiles` — end-to-end PNG → quantiser → pack pipeline; one tile
 - [ ] `golden-png-to-pack-5tiles.rawtiles` — same pipeline, multi-tile; pins resample/alpha-handling output
 
 ### Gap-fillers (not named in spec, but the v1 surface needs them)
-- [ ] `golden-smallest.rawtiles` — minimum-legal non-empty pack (1 tile, no extensions); the "smallest non-empty pack" of § 14.3
-- [ ] `golden-singleimage-affn.rawtiles` — `(LocalLinear, SingleImage)` with AFFN; the only path that exercises § 7.3 AFFN encoding and § 4.9 LocalLinear bbox derivation
+- [x] `golden-smallest.rawtiles` — minimum-legal non-empty pack (1 tile, no extensions); the "smallest non-empty pack" of § 14.3
+- [x] `golden-singleimage-affn.rawtiles` — `(LocalLinear, SingleImage)` with AFFN; the only path that exercises § 7.3 AFFN encoding and § 4.9 LocalLinear bbox derivation
 - [ ] `golden-tms.rawtiles` — `tile_axis_convention = TMS`; covers the §§ 4.9 / 6.2 / 8.4 TMS branch
-- [ ] `golden-empty-quadtree.rawtiles` — Quadtree with `tile_count = 0`, NAME-only or ATTR-only payload; § 8.6 metadata-only path
+- [x] `golden-empty-quadtree.rawtiles` — Quadtree with `tile_count = 0`, NAME-only or ATTR-only payload; § 8.6 metadata-only path
 - [ ] `golden-names-multilocale.rawtiles` — multiple `NAME` sections including `tag_length=0` fallback; pins § 7.4 + § 12.1 NAME ordering (the `zh` vs `en-US` byte-order trap)
 - [ ] `golden-supersedes.rawtiles` — non-zero `supersedes_uuid`
 - [ ] `golden-zmax.rawtiles` — tile at `z = 23` (max legal zoom) and `(x, y)` near `2^23 − 1`
@@ -59,40 +59,40 @@ Each fixture differs from a known-good golden by **one** byte/field. Every file 
 
 ### Header / file structure
 - [ ] `neg-01-short-file.rawtiles` — file < 296 bytes [#1]
-- [ ] `neg-02-bad-magic.rawtiles` — first 4 bytes ≠ `RAWT` [#2]
-- [ ] `neg-03-major-2.rawtiles` — `format_version_major = 2` [#3]
-- [ ] `neg-05-uuid-zero.rawtiles` — `pack_uuid` = all-zero [#5]
-- [ ] `neg-06-parent-nonzero.rawtiles` — `parent_uuid` ≠ all-zero [#6]
-- [ ] `neg-09-tiledim-zero.rawtiles` — `tile_dim_px = 0` [#9]
-- [ ] `neg-25-index-offset-296.rawtiles` — `index_offset = 296` (not 292) [#25]
+- [x] `neg-02-bad-magic.rawtiles` — first 4 bytes ≠ `RAWT` [#2]
+- [x] `neg-03-major-2.rawtiles` — `format_version_major = 2` [#3]
+- [x] `neg-05-uuid-zero.rawtiles` — `pack_uuid` = all-zero [#5]
+- [x] `neg-06-parent-nonzero.rawtiles` — `parent_uuid` ≠ all-zero [#6]
+- [x] `neg-09-tiledim-zero.rawtiles` — `tile_dim_px = 0` [#9]
+- [x] `neg-25-index-offset-296.rawtiles` — `index_offset = 296` (not 292) [#25]
 - [ ] `neg-30-pack-too-large.rawtiles` — declared `file_size > 2^32 − 1` *(may be marked "no fixture; impractical to ship 4 GiB" — document the rule as enforced by writer per § 3)*
 
 ### Enums (§ 8) [#7]
-- [ ] `neg-07a-pixfmt-0.rawtiles` — reserved `pixel_format = 0`
-- [ ] `neg-07b-pixfmt-2.rawtiles` — reserved `pixel_format = 2` (`L4`)
-- [ ] `neg-07c-proj-0.rawtiles` — reserved `projection = 0`
-- [ ] `neg-07d-proj-2.rawtiles` — reserved `projection = 2` (equirectangular)
-- [ ] `neg-07e-addr-0.rawtiles` — reserved `tile_addressing_scheme = 0`
-- [ ] `neg-07f-axis-0.rawtiles` — reserved `tile_axis_convention = 0`
-- [ ] `neg-07g-comp-1.rawtiles` — reserved `compression = 1` (LZ4)
+- [x] `neg-07a-pixfmt-0.rawtiles` — reserved `pixel_format = 0`
+- [x] `neg-07b-pixfmt-2.rawtiles` — reserved `pixel_format = 2` (`L4`)
+- [x] `neg-07c-proj-0.rawtiles` — reserved `projection = 0`
+- [x] `neg-07d-proj-2.rawtiles` — reserved `projection = 2` (equirectangular)
+- [x] `neg-07e-addr-0.rawtiles` — reserved `tile_addressing_scheme = 0`
+- [x] `neg-07f-axis-0.rawtiles` — reserved `tile_axis_convention = 0`
+- [x] `neg-07g-comp-1.rawtiles` — reserved `compression = 1` (LZ4)
 
 ### Legal enum pair (§ 8.6) [#8]
 - [ ] `neg-08a-webmerc-singleimage.rawtiles` — `(WebMercator, SingleImage)`
 - [ ] `neg-08b-locallinear-quadtree.rawtiles` — `(LocalLinear, Quadtree)`
 
 ### Zoom (§ 4.8) [#10]
-- [ ] `neg-10a-zmax-24.rawtiles` — `zoom_max = 24`
-- [ ] `neg-10b-zmin-gt-zmax.rawtiles` — `zoom_min > zoom_max`
+- [x] `neg-10a-zmax-24.rawtiles` — `zoom_max = 24`
+- [x] `neg-10b-zmin-gt-zmax.rawtiles` — `zoom_min > zoom_max`
 
 ### bbox (§ 4.9) [#11]
-- [ ] `neg-11a-lon-overflow.rawtiles` — `max_lon = 180_000_001`
-- [ ] `neg-11b-lat-overflow.rawtiles` — `min_lat = −90_000_001`
-- [ ] `neg-11c-lon-inverted.rawtiles` — `min_lon > max_lon`
-- [ ] `neg-11d-lat-inverted.rawtiles` — `min_lat > max_lat`
+- [x] `neg-11a-lon-overflow.rawtiles` — `max_lon = 180_000_001`
+- [x] `neg-11b-lat-overflow.rawtiles` — `min_lat = −90_000_001`
+- [x] `neg-11c-lon-inverted.rawtiles` — `min_lon > max_lon`
+- [x] `neg-11d-lat-inverted.rawtiles` — `min_lat > max_lat`
 
 ### Tile-index entry (§ 5) [#12 – #16, #31, #32]
-- [ ] `neg-12a-flags-nonzero.rawtiles` — entry `flags ≠ 0` [#12]
-- [ ] `neg-12b-reserved-nonzero.rawtiles` — entry `reserved ≠ 0` [#12]
+- [x] `neg-12a-flags-nonzero.rawtiles` — entry `flags ≠ 0` [#12]
+- [x] `neg-12b-reserved-nonzero.rawtiles` — entry `reserved ≠ 0` [#12]
 - [ ] `neg-13a-z-descending.rawtiles` — entries with `z` non-monotone [#13]
 - [ ] `neg-13b-xy-not-strict.rawtiles` — within a zoom, `(x, y)` not strictly ascending [#13]
 - [ ] `neg-13c-duplicate-zxy.rawtiles` — two entries with identical `(z, x, y)` [#13]
@@ -102,7 +102,7 @@ Each fixture differs from a known-good golden by **one** byte/field. Every file 
 - [ ] `neg-14d-length-overruns-blob.rawtiles` — entry `length > extensions_offset − offset` [#14d]
 - [ ] `neg-15a-z-above-zmax.rawtiles` — entry `z > zoom_max` [#15]
 - [ ] `neg-15b-z-below-zmin.rawtiles` — entry `z < zoom_min` [#15]
-- [ ] `neg-16-length-mismatch.rawtiles` — entry `length ≠ tile_dim_px²` for ABGR2222/None [#16]
+- [x] `neg-16-length-mismatch.rawtiles` — entry `length ≠ tile_dim_px²` for ABGR2222/None [#16]
 - [ ] `neg-31a-x-overflow.rawtiles` — Quadtree entry `x ≥ 2^z` [#31]
 - [ ] `neg-31b-y-overflow.rawtiles` — Quadtree entry `y ≥ 2^z` [#31]
 - [ ] `neg-32a-tile-gap.rawtiles` — gap between consecutive tiles (offset > expected) [#32]
@@ -126,9 +126,9 @@ Each fixture differs from a known-good golden by **one** byte/field. Every file 
 - [x] `neg-19c-stranded-bytes.rawtiles` — bytes between last section and CRC footer
 
 ### Extension tag rules (§ 7.2 / 7.3) [#20, #27, #28, #29]
-- [ ] `neg-20-unknown-uppercase-tag.rawtiles` — unknown SDK-reserved tag (e.g. `XYZQ`) [#20]
-- [ ] `neg-27-tag-digit-first.rawtiles` — first byte is `'1'` (0x31), digit [#27]
-- [ ] `neg-28-tag-nonprintable.rawtiles` — tag bytes 2–4 contain a control byte [#28]
+- [x] `neg-20-unknown-uppercase-tag.rawtiles` — unknown SDK-reserved tag (e.g. `XYZQ`) [#20]
+- [x] `neg-27-tag-digit-first.rawtiles` — first byte is `'1'` (0x31), digit [#27]
+- [x] `neg-28-tag-nonprintable.rawtiles` — tag bytes 2–4 contain a control byte [#28]
 - [x] `neg-29a-duplicate-uppercase.rawtiles` — two `ATTR` sections [#29]
 - [ ] `neg-29b-duplicate-name-locale.rawtiles` — two `NAME` sections with identical `bcp47_tag` [#29]
 
@@ -166,7 +166,7 @@ Pick representative violations rather than every sub-condition — one fixture p
 - [ ] `neg-23e-singleimage-zoomoffsets-leak.rawtiles` — `zoom_offsets[1]` non-zero
 
 ### CRC (§ 10) [#24]
-- [ ] `neg-24-crc-flipped.rawtiles` — final 4 bytes XOR'd with `0x00000001`
+- [x] `neg-24-crc-flipped.rawtiles` — final 4 bytes XOR'd with `0x00000001`
 
 ---
 
