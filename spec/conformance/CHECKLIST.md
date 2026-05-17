@@ -130,7 +130,7 @@ Each fixture differs from a known-good golden by **one** byte/field. Every file 
 - [x] `neg-27-tag-digit-first.rawtiles` — first byte is `'1'` (0x31), digit [#27]
 - [x] `neg-28-tag-nonprintable.rawtiles` — tag bytes 2–4 contain a control byte [#28]
 - [x] `neg-29a-duplicate-uppercase.rawtiles` — two `ATTR` sections [#29]
-- [ ] `neg-29b-duplicate-name-locale.rawtiles` — two `NAME` sections with identical `bcp47_tag` [#29]
+- [x] `neg-29b-duplicate-name-locale.rawtiles` — two `NAME` sections with identical `bcp47_tag` [#29]
 
 ### AFFN (§ 7.3) [#22, #34, #35, #36]
 - [x] `neg-22-locallinear-no-affn.rawtiles` — `projection = LocalLinear` and no AFFN section [#22]
@@ -140,11 +140,11 @@ Each fixture differs from a known-good golden by **one** byte/field. Every file 
 - [x] `neg-36-affn-with-webmercator.rawtiles` — AFFN present with `projection ≠ LocalLinear` [#36]
 
 ### NAME (§ 7.4) [#26, #37]
-- [ ] `neg-26a-name-payload-empty.rawtiles` — `NAME` payload length = 0 [#26]
-- [ ] `neg-26b-name-tag-overruns.rawtiles` — `1 + tag_length > payload length` [#26]
-- [ ] `neg-37a-name-bad-utf8.rawtiles` — `name` field contains invalid UTF-8 [#37]
-- [ ] `neg-37b-name-bcp47-bad-case.rawtiles` — `bcp47_tag = "EN-us"` (wrong case) [#37]
-- [ ] `neg-37c-name-bcp47-3-letter.rawtiles` — `bcp47_tag = "eng"` (3-letter, outside v1 subset) [#37]
+- [x] `neg-26a-name-payload-empty.rawtiles` — `NAME` payload length = 0 [#26]
+- [x] `neg-26b-name-tag-overruns.rawtiles` — `1 + tag_length > payload length` [#26]
+- [x] `neg-37a-name-bad-utf8.rawtiles` — `name` field contains invalid UTF-8 [#37]
+- [x] `neg-37b-name-bcp47-bad-case.rawtiles` — `bcp47_tag = "EN-us"` (wrong case) [#37]
+- [x] `neg-37c-name-bcp47-3-letter.rawtiles` — `bcp47_tag = "eng"` (3-letter, outside v1 subset) [#37]
 
 ### SRCD / ATTR text rules (§ 7.3) [#38]
 - [x] `neg-38a-srcd-bad-utf8.rawtiles` — SRCD payload contains invalid UTF-8

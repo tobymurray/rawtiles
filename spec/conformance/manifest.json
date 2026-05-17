@@ -1060,6 +1060,40 @@
       "mutation": "index_offset 292 → 296; tile-index region shifted right by 4 zero bytes; zoom_offsets[0].offset, entry.offset, extensions_offset updated; CRC recomputed."
     },
     {
+      "name": "neg-26a-name-payload-empty",
+      "kind": "negative",
+      "path": "negative/neg-26a-name-payload-empty.rawtiles",
+      "description": "Pack derived from golden-names-multilocale by truncating section 3's payload to 0 bytes and the file accordingly. The section's `length` field is 0, so no byte is available for the mandatory `tag_length` per § 7.4. file_size 456 → 440; CRC recomputed.",
+      "spec_refs": [
+        "§ 7.4"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "68fe7ffaf75b8d71c29bd5ab458da4b000e7aea5b0646739f925b94d3fe29c1b",
+      "expected_reject_rule": {
+        "rule_number": "26",
+        "summary": "NAME section payload length MUST be ≥ 1 (one byte for `tag_length`); additionally `1 + tag_length` MUST be ≤ payload length (§ 7.4 + § 11 #26)"
+      },
+      "derived_from": "golden-names-multilocale",
+      "mutation": "Truncated golden-names-multilocale's section 3 (`bcp47=en-US`) to a zero-length payload: section length field 16 → 0; section payload (16 bytes) and CRC dropped; new CRC appended. file_size 456 → 440."
+    },
+    {
+      "name": "neg-26b-name-tag-overruns",
+      "kind": "negative",
+      "path": "negative/neg-26b-name-tag-overruns.rawtiles",
+      "description": "Pack with section 1's `tag_length` byte (file offset 400) bumped 2 → 8. Payload length is 8, so `1 + tag_length = 9 > 8` — the declared bcp47_tag exceeds the payload's bounds. CRC recomputed.",
+      "spec_refs": [
+        "§ 7.4"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "06c7965eac3fdaa136fe09db63ffbeef8ceaf17474350f1ff46e7cc7323fa095",
+      "expected_reject_rule": {
+        "rule_number": "26",
+        "summary": "NAME section payload length MUST be ≥ 1 AND `1 + tag_length` MUST be ≤ payload length (§ 7.4 + § 11 #26)"
+      },
+      "derived_from": "golden-names-multilocale",
+      "mutation": "file[400] (section 1 `tag_length`) 0x02 → 0x08; CRC recomputed."
+    },
+    {
       "name": "neg-27-tag-digit-first",
       "kind": "negative",
       "path": "negative/neg-27-tag-digit-first.rawtiles",
@@ -1110,6 +1144,24 @@
       },
       "derived_from": "golden-attr",
       "mutation": "Appended a second ATTR section with payload 'Other source' (12 bytes) directly after the existing ATTR section; file_size 444 → 464; CRC recomputed."
+    },
+    {
+      "name": "neg-29b-duplicate-name-locale",
+      "kind": "negative",
+      "path": "negative/neg-29b-duplicate-name-locale.rawtiles",
+      "description": "Pack derived from golden-names-multilocale by inserting a byte-identical copy of the `en` NAME section. Two NAME sections now share `bcp47 = en`, violating § 7.4's uniqueness rule for bcp47_tag values. Section 1's duplicate is placed immediately after the original (tied under § 12.1's byte-order sort, so ordering is locally consistent). file_size 456 → 472; CRC recomputed.",
+      "spec_refs": [
+        "§ 7.4",
+        "§ 11"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "30e24aa4f721d07814dbfc620d773e15f7a2860488aa980362cc2e47e2cd7acf",
+      "expected_reject_rule": {
+        "rule_number": "29",
+        "summary": "any two NAME sections sharing the same bcp47_tag value MUST be rejected (§ 7.4 + § 11 #29)"
+      },
+      "derived_from": "golden-names-multilocale",
+      "mutation": "Inserted a byte-identical copy of section 1 (`bcp47 = en`, 16 bytes) at file offset 408, between the original section 1 and section 2. Sections 2 and 3 shifted right by 16 bytes; file_size 456 → 472; CRC recomputed."
     },
     {
       "name": "neg-31a-x-overflow",
@@ -1246,6 +1298,57 @@
       },
       "derived_from": "golden-smallest",
       "mutation": "Built from scratch in the shape of golden-smallest (WebMercator/Quadtree/XYZ, 1 tile at 0,0,0) with a valid AFFN section appended at extensions_offset = 376 (tag + length=48 + six finite zero f64 coefficients). file_size 380 → 436."
+    },
+    {
+      "name": "neg-37a-name-bad-utf8",
+      "kind": "negative",
+      "path": "negative/neg-37a-name-bad-utf8.rawtiles",
+      "description": "Pack with section 2's `name` UTF-8 lead byte (file offset 419, first byte of `瓦`) replaced by 0xFF — never a legal UTF-8 byte. Section framing and bcp47 unchanged; CRC recomputed.",
+      "spec_refs": [
+        "§ 7.4"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "4152158681aa44e5fef7128a82dbaaff68f603043b131414e0ebb06e831b3106",
+      "expected_reject_rule": {
+        "rule_number": "37",
+        "summary": "NAME `name` MUST be valid UTF-8; when tag_length > 0, `bcp47_tag` MUST match the v1 restricted BCP-47 subset (`[a-z]{2}` or `[a-z]{2}-[A-Z]{2}`) (§ 7.4 + § 11 #37)"
+      },
+      "derived_from": "golden-names-multilocale",
+      "mutation": "file[419] (section 2 `name` first UTF-8 byte) 0xE7 → 0xFF; CRC recomputed."
+    },
+    {
+      "name": "neg-37b-name-bcp47-bad-case",
+      "kind": "negative",
+      "path": "negative/neg-37b-name-bcp47-bad-case.rawtiles",
+      "description": "Pack with section 3's bcp47 (`en-US`, bytes 437..442) rewritten as `EN-us`: language uppercased, region lowercased. § 7.4's case requirement is normative; the resulting tag matches neither permitted shape. CRC recomputed.",
+      "spec_refs": [
+        "§ 7.4"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "cb54be354a552243b83991ccfae436f0cc12f2835fcd83e2ed99d4f6d1bfe953",
+      "expected_reject_rule": {
+        "rule_number": "37",
+        "summary": "NAME `name` MUST be valid UTF-8; when tag_length > 0, `bcp47_tag` MUST match the v1 restricted BCP-47 subset (`[a-z]{2}` or `[a-z]{2}-[A-Z]{2}`) (§ 7.4 + § 11 #37)"
+      },
+      "derived_from": "golden-names-multilocale",
+      "mutation": "file[437..442] (section 3 `bcp47_tag`) `en-US` → `EN-us` (4-byte case swap, byte 439 `-` unchanged); CRC recomputed."
+    },
+    {
+      "name": "neg-37c-name-bcp47-3-letter",
+      "kind": "negative",
+      "path": "negative/neg-37c-name-bcp47-3-letter.rawtiles",
+      "description": "Pack with section 1's payload rewritten so bcp47 is `eng` (3 letters): tag_length 2 → 3 and payload byte 3 'T' → 'g'. The name shrinks from `Tiles` to `iles` (still valid UTF-8); payload length stays at 8 so rule #26 stays quiet. The 3-letter tag is outside the v1 restricted subset (`[a-z]{2}` or `[a-z]{2}-[A-Z]{2}`). CRC recomputed.",
+      "spec_refs": [
+        "§ 7.4"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "6ad418b8430146922c432a85bb5d36f92244614fe50315d896dd139a6095cf57",
+      "expected_reject_rule": {
+        "rule_number": "37",
+        "summary": "NAME `name` MUST be valid UTF-8; when tag_length > 0, `bcp47_tag` MUST match the v1 restricted BCP-47 subset (`[a-z]{2}` or `[a-z]{2}-[A-Z]{2}`) (§ 7.4 + § 11 #37)"
+      },
+      "derived_from": "golden-names-multilocale",
+      "mutation": "file[400] (section 1 `tag_length`) 0x02 → 0x03; file[403] (section 1 `bcp47[2]` / former first byte of name) 'T' → 'g'; CRC recomputed."
     },
     {
       "name": "neg-38a-srcd-bad-utf8",
