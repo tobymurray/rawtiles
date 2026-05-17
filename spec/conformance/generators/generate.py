@@ -79,6 +79,7 @@ if __package__ in (None, ""):
         neg_36_affn_with_webmercator,
         neg_37_name_payload,
         neg_38_attr_text,
+        neg_38i_attr_empty,
     )
 else:
     from . import (
@@ -139,6 +140,7 @@ else:
         neg_36_affn_with_webmercator,
         neg_37_name_payload,
         neg_38_attr_text,
+        neg_38i_attr_empty,
     )
 
 
@@ -200,8 +202,9 @@ GENERATORS = [
     neg_36_affn_with_webmercator,
     *neg_37_name_payload.FIXTURES,
     *neg_38_attr_text.FIXTURES,
+    neg_38i_attr_empty,
 ]
-SPEC_VERSION = "0.1"
+SPEC_VERSION = "0.3"
 MANIFEST_VERSION = 1
 GENERATED_BY = "rawtiles-conformance generators v1"
 

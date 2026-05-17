@@ -1,21 +1,27 @@
-"""neg-38[a-g] — § 11 #38 SRCD / ATTR text-rule violations (mutate-style).
+"""neg-38[a-h] — § 11 #38 SRCD / ATTR text-rule violations (mutate-style).
 
-§ 11 #38: "Reject any SRCD or ATTR section whose payload is not valid UTF-8.
-Additionally reject any ATTR section whose payload contains any byte sequence
-decoding to U+0001–U+001F other than U+000A, to U+007F, to U+0085, to U+2028,
-or to U+2029 (§ 7.3)."
+§ 11 #38 (spec 0.3): "Reject any SRCD or ATTR section whose payload is not
+valid UTF-8. Additionally reject any ATTR section whose payload (a) contains
+any byte sequence decoding to U+0001–U+001F other than U+000A, to U+007F,
+to U+0085, to U+2028, or to U+2029; (b) has declared length zero; or
+(c) ends with byte 0x0A (trailing LF after the last string) (§ 7.3)."
 
-All seven fixtures derive from golden-attr by mutating bytes within the ATTR
-section's payload (file offsets 384..437). Each fixture isolates one failure
-mode; the others are valid.
+All eight mutate-style fixtures here derive from golden-attr by mutating
+bytes within the ATTR section's payload (file offsets 384..437) and/or
+the section's length field (file offsets 380..384). Each fixture isolates
+one failure mode; the others are valid.
 
-  38a   SRCD bad UTF-8        — tag flipped to SRCD + payload byte → 0xFF
-  38b   ATTR bad UTF-8        — payload byte → 0xFF
+  38a   SRCD bad UTF-8        — tag flipped to SRCD + payload byte → 0xFF   [#38(a)]
+  38b   ATTR bad UTF-8        — payload byte → 0xFF                          [#38(a)]
   38c   ATTR CRLF             — byte immediately before the LF separator → 0x0D
   38d   ATTR bare CR          — non-adjacent-to-LF byte → 0x0D
   38e   ATTR C0 control       — non-LF byte → 0x07 (BEL)
   38f   ATTR NEL              — '©' trailer 0xA9 → 0x85; yields 0xC2 0x85 = U+0085
   38g   ATTR LS               — '© ' (3 bytes) → 0xE2 0x80 0xA8 = U+2028
+  38h   ATTR trailing LF      — length 53 → 54 + first pad byte → 0x0A      [#38(c)]
+
+The zero-length payload case (neg-38i) is a reshape-style fixture (file
+shrinks) and lives in its own module.
 
 ATTR payload layout in golden-attr (file offsets shown):
 
@@ -25,12 +31,7 @@ ATTR payload layout in golden-attr (file offsets shown):
   407       0x0A               (separator LF)
   408..409  0xC2 0xA9          (second '©')
   410..436  " OpenStreetMap contributors" (ASCII, 27 bytes)
-
-The ATTR trailing-LF case (neg-38h) and zero-length case (neg-38i) are NOT
-covered by § 11 #38 as currently worded — U+000A is the rule's explicit
-exclusion, and an empty payload is vacuously valid UTF-8 with no forbidden
-codepoints. Those two fixtures are deferred pending a spec amendment that
-extends § 11 #38 to restate the remaining § 7.3 ATTR-payload rules.
+  437..440  0x00 0x00 0x00     (3 alignment pad bytes — repurposed by 38h)
 """
 
 from __future__ import annotations
@@ -38,9 +39,11 @@ from __future__ import annotations
 from . import _lib, golden_attr
 
 _RULE_38_SUMMARY = (
-    "SRCD and ATTR payloads MUST be valid UTF-8; ATTR additionally MUST contain "
-    "no C0 control codepoint other than LF, no DEL (U+007F), no NEL (U+0085), "
-    "no LS (U+2028), and no PS (U+2029) (§ 7.3)"
+    "SRCD and ATTR payloads MUST be valid UTF-8. ATTR additionally MUST "
+    "(a) contain no C0 control codepoint other than LF, no DEL (U+007F), no "
+    "NEL (U+0085), no LS (U+2028), and no PS (U+2029); (b) have non-zero "
+    "declared length; (c) not end with byte 0x0A (no trailing LF after the "
+    "last string) (§ 7.3 + § 11 #38)"
 )
 
 # ATTR section header occupies file offsets 376..384; payload begins at 384.
@@ -82,6 +85,15 @@ def _mut_attr_ls(buf: bytearray) -> None:
     buf[_payload_byte(16)] = 0xE2
     buf[_payload_byte(17)] = 0x80
     buf[_payload_byte(18)] = 0xA8
+
+
+def _mut_attr_trailing_lf(buf: bytearray) -> None:
+    # Extend the declared payload by one byte (bumping length 53 → 54) and
+    # promote the first alignment-pad byte to 0x0A. After mutation the section
+    # ends at exactly the same file offset (8 header + 54 payload + 2 pad = 64),
+    # so framing/CRC stay valid; only the new (c) clause of rule #38 fires.
+    buf[380] = 54                                              # length LSB: 53 → 54
+    buf[_payload_byte(53)] = 0x0A                              # was pad 0x00
 
 
 _COMMON = dict(
@@ -172,6 +184,25 @@ FIXTURES = [
         mutation=(
             "bytes 400..403 (payload[16..19], first '©' UTF-8 plus the following space) "
             "0xC2 0xA9 0x20 → 0xE2 0x80 0xA8 (U+2028); CRC recomputed."
+        ),
+        **_COMMON,
+    ),
+    _lib.mutate_style_negative(
+        name="neg-38h-attr-trailing-lf",
+        mutate=_mut_attr_trailing_lf,
+        description=(
+            "Pack with the ATTR section's declared payload length bumped 53 → 54 "
+            "and the first alignment-pad byte (file 437) promoted to 0x0A. The "
+            "now-54-byte payload ends with LF, violating § 11 #38(c) "
+            "(no trailing LF after the last string). The 2 remaining pad bytes "
+            "stay 0x00, so § 11 #19's pad-zero rule stays quiet; total framed "
+            "size (8 + 54 + 2 = 64) and section/CRC offsets are unchanged. "
+            "CRC recomputed."
+        ),
+        mutation=(
+            "byte 380 (ATTR length field LSB) 0x35 → 0x36 (53 → 54); byte 437 "
+            "(first alignment-pad byte, now repurposed as the last payload byte) "
+            "0x00 → 0x0A; CRC recomputed."
         ),
         **_COMMON,
     ),

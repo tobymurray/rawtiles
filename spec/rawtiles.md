@@ -310,8 +310,8 @@ Conditional requirements:
 **ATTR payload rules.**
 
 - Lines are separated by a single LF byte (`0x0A`, U+000A). CRLF and bare CR are NOT permitted. The payload MUST contain no ASCII C0 control character (U+0001–U+001F) other than U+000A (LF), no DEL (U+007F), and no Unicode line-break codepoint U+0085 (NEL), U+2028 (LS), or U+2029 (PS). Writers MUST reject sources carrying any of these in attribution strings; readers MUST reject packs containing them (§ 11 #38).
-- No trailing LF after the last string.
-- Payload length MUST NOT be zero. A pack with zero sources MUST omit the `ATTR` section.
+- No trailing LF after the last string. Readers MUST reject any `ATTR` section whose payload's final byte is `0x0A` (§ 11 #38).
+- Payload length MUST NOT be zero. A pack with zero sources MUST omit the `ATTR` section. Readers MUST reject any `ATTR` section whose declared payload length is zero (§ 11 #38).
 - For byte-identical reproducibility across writers, the strings MUST be ordered to match the canonical `sources` array order defined in Appendix A.4 (sorted by `(zoom_min, zoom_max, kind, identity)`).
 
 **SRCD is OPTIONAL.** Writers claiming cross-writer reproducibility (§ 14.1) MUST omit SRCD from v1 packs; v1 does not define a canonical SRCD-derivation function. Writers that emit SRCD MUST treat its bytes as part of their intra-writer deterministic surface.
@@ -522,7 +522,7 @@ A conforming v1 reader MUST:
 35. Reject any `AFFN` section whose six decoded IEEE-754 binary64 coefficients are not all finite (§ 7.3).
 36. Reject any pack with `projection ≠ LocalLinear` that contains an `AFFN` section (§ 7.3).
 37. Reject any `NAME` section whose `name` field is not valid UTF-8, or whose `bcp47_tag` field (when `tag_length > 0`) does not match the v1 restricted BCP-47 subset of § 7.4.
-38. Reject any `SRCD` or `ATTR` section whose payload is not valid UTF-8. Additionally reject any `ATTR` section whose payload contains any byte sequence decoding to U+0001–U+001F other than U+000A, to U+007F, to U+0085, to U+2028, or to U+2029 (§ 7.3).
+38. Reject any `SRCD` or `ATTR` section whose payload is not valid UTF-8. Additionally reject any `ATTR` section whose payload (a) contains any byte sequence decoding to U+0001–U+001F other than U+000A, to U+007F, to U+0085, to U+2028, or to U+2029; (b) has declared length zero; or (c) ends with byte `0x0A` (trailing LF after the last string) (§ 7.3).
 39. `memcpy` 64-bit values within extension-section payloads into 8-aligned locals before decoding, then convert the little-endian on-disk bytes to host byte order. Payload-internal 64-bit fields (notably `AFFN`'s six `f64`s, § 7.3) may land 4-aligned-not-8-aligned under § 7.1's section-start-only alignment guarantee.
 
 ## 12. Writer requirements
@@ -829,5 +829,6 @@ The intermediate SHA-1 is included so independent implementations can bisect a m
 |---|---|---|
 | 0.1 | 2026-05-14 | Initial v0.x release. Wire format `(1, 0)` admits breaking changes between v0.x bumps until v1.0 stabilization. Supersedes the unreleased `1.0-rc1` draft. |
 | 0.2 | 2026-05-15 | § 7.3 + § 14.1: NFC normalisation is MUST-strength for writers emitting text-bearing extension payloads (ATTR, SRCD, NAME `name`). Writer-side tightening; no reader-rejection rules added, no wire-format change. v0.1 packs whose text fields were not NFC-normalised remain readable but are no longer cross-writer-reproducible under v0.2. |
+| 0.3 | 2026-05-17 | § 11 #38: extend the ATTR-specific rejection clause to also fire on (b) zero declared payload length and (c) trailing 0x0A (LF) after the last string. Both invariants already existed in § 7.3's ATTR payload rules; this revision restates them as reader rejections to match the existing codepoint-set clause. § 7.3 ATTR bullets updated with matching "readers MUST reject" language. v0.2 packs with zero-length or trailing-LF ATTR remain *writer-invalid* (those rules predated 0.3) but were previously not required to be reader-rejected; v0.3 readers MUST reject them. |
 
 Note: the *spec document* version (`0.1`, `0.2`, `1.0`, `1.1`, …) is distinct from the *wire format* `format_version` bytes in the header. Multiple spec-document revisions can describe the same wire format `(1, 0)` if the changes are editorial or normative-clarification only.

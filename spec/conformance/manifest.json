@@ -1,5 +1,5 @@
 {
-  "spec_version": "0.1",
+  "spec_version": "0.3",
   "manifest_version": 1,
   "generated_by": "rawtiles-conformance generators v1",
   "fixtures": [
@@ -1446,7 +1446,7 @@
       "pack_sha256": "7d9be990c174aa170375a3272e21920b55dd989b9dc0467ca6e0e12ad78eb8b9",
       "expected_reject_rule": {
         "rule_number": "38",
-        "summary": "SRCD and ATTR payloads MUST be valid UTF-8; ATTR additionally MUST contain no C0 control codepoint other than LF, no DEL (U+007F), no NEL (U+0085), no LS (U+2028), and no PS (U+2029) (§ 7.3)"
+        "summary": "SRCD and ATTR payloads MUST be valid UTF-8. ATTR additionally MUST (a) contain no C0 control codepoint other than LF, no DEL (U+007F), no NEL (U+0085), no LS (U+2028), and no PS (U+2029); (b) have non-zero declared length; (c) not end with byte 0x0A (no trailing LF after the last string) (§ 7.3 + § 11 #38)"
       },
       "derived_from": "golden-attr",
       "mutation": "bytes 376..380 (section tag) 'ATTR' → 'SRCD'; byte 400 (payload[16], lead byte of first '©') 0xC2 → 0xFF; CRC recomputed."
@@ -1463,7 +1463,7 @@
       "pack_sha256": "a998d4f52f74dda52fa1bd230509f2299ad139327b65e71d9e2ef6adbb6f2155",
       "expected_reject_rule": {
         "rule_number": "38",
-        "summary": "SRCD and ATTR payloads MUST be valid UTF-8; ATTR additionally MUST contain no C0 control codepoint other than LF, no DEL (U+007F), no NEL (U+0085), no LS (U+2028), and no PS (U+2029) (§ 7.3)"
+        "summary": "SRCD and ATTR payloads MUST be valid UTF-8. ATTR additionally MUST (a) contain no C0 control codepoint other than LF, no DEL (U+007F), no NEL (U+0085), no LS (U+2028), and no PS (U+2029); (b) have non-zero declared length; (c) not end with byte 0x0A (no trailing LF after the last string) (§ 7.3 + § 11 #38)"
       },
       "derived_from": "golden-attr",
       "mutation": "byte 400 (payload[16], lead byte of first '©') 0xC2 → 0xFF; CRC recomputed."
@@ -1480,7 +1480,7 @@
       "pack_sha256": "19ae5b82bb0a8826f9efcbed05042b6ea7a85ef2631679dd6916ef60d88c6c28",
       "expected_reject_rule": {
         "rule_number": "38",
-        "summary": "SRCD and ATTR payloads MUST be valid UTF-8; ATTR additionally MUST contain no C0 control codepoint other than LF, no DEL (U+007F), no NEL (U+0085), no LS (U+2028), and no PS (U+2029) (§ 7.3)"
+        "summary": "SRCD and ATTR payloads MUST be valid UTF-8. ATTR additionally MUST (a) contain no C0 control codepoint other than LF, no DEL (U+007F), no NEL (U+0085), no LS (U+2028), and no PS (U+2029); (b) have non-zero declared length; (c) not end with byte 0x0A (no trailing LF after the last string) (§ 7.3 + § 11 #38)"
       },
       "derived_from": "golden-attr",
       "mutation": "byte 406 (payload[22], '6' before the LF separator) 0x36 → 0x0D; CRC recomputed."
@@ -1497,7 +1497,7 @@
       "pack_sha256": "4f5e7b23a3d9ba245968b12f3ee8774d3206bb9ac2d530ca264dc1119bb672bc",
       "expected_reject_rule": {
         "rule_number": "38",
-        "summary": "SRCD and ATTR payloads MUST be valid UTF-8; ATTR additionally MUST contain no C0 control codepoint other than LF, no DEL (U+007F), no NEL (U+0085), no LS (U+2028), and no PS (U+2029) (§ 7.3)"
+        "summary": "SRCD and ATTR payloads MUST be valid UTF-8. ATTR additionally MUST (a) contain no C0 control codepoint other than LF, no DEL (U+007F), no NEL (U+0085), no LS (U+2028), and no PS (U+2029); (b) have non-zero declared length; (c) not end with byte 0x0A (no trailing LF after the last string) (§ 7.3 + § 11 #38)"
       },
       "derived_from": "golden-attr",
       "mutation": "byte 399 (payload[15], space before first '©') 0x20 → 0x0D; CRC recomputed."
@@ -1514,7 +1514,7 @@
       "pack_sha256": "1b1ff5938e53747c4b2987ad29875fc471dea99db0ced82604edcb7f87ac7322",
       "expected_reject_rule": {
         "rule_number": "38",
-        "summary": "SRCD and ATTR payloads MUST be valid UTF-8; ATTR additionally MUST contain no C0 control codepoint other than LF, no DEL (U+007F), no NEL (U+0085), no LS (U+2028), and no PS (U+2029) (§ 7.3)"
+        "summary": "SRCD and ATTR payloads MUST be valid UTF-8. ATTR additionally MUST (a) contain no C0 control codepoint other than LF, no DEL (U+007F), no NEL (U+0085), no LS (U+2028), and no PS (U+2029); (b) have non-zero declared length; (c) not end with byte 0x0A (no trailing LF after the last string) (§ 7.3 + § 11 #38)"
       },
       "derived_from": "golden-attr",
       "mutation": "byte 399 (payload[15], space before first '©') 0x20 → 0x07 (BEL); CRC recomputed."
@@ -1531,7 +1531,7 @@
       "pack_sha256": "9c789f56d937d357ea2d31c898a136d894450e35087a9c25bc63edb5ff1ce05f",
       "expected_reject_rule": {
         "rule_number": "38",
-        "summary": "SRCD and ATTR payloads MUST be valid UTF-8; ATTR additionally MUST contain no C0 control codepoint other than LF, no DEL (U+007F), no NEL (U+0085), no LS (U+2028), and no PS (U+2029) (§ 7.3)"
+        "summary": "SRCD and ATTR payloads MUST be valid UTF-8. ATTR additionally MUST (a) contain no C0 control codepoint other than LF, no DEL (U+007F), no NEL (U+0085), no LS (U+2028), and no PS (U+2029); (b) have non-zero declared length; (c) not end with byte 0x0A (no trailing LF after the last string) (§ 7.3 + § 11 #38)"
       },
       "derived_from": "golden-attr",
       "mutation": "byte 401 (payload[17], trailer of first '©') 0xA9 → 0x85; combined with the unchanged lead 0xC2 this encodes U+0085 (NEL); CRC recomputed."
@@ -1548,10 +1548,44 @@
       "pack_sha256": "1fa46cede08b186d2e5c72e3ce4ed3316c20333ed5a1b1e8b499602fac03fcdc",
       "expected_reject_rule": {
         "rule_number": "38",
-        "summary": "SRCD and ATTR payloads MUST be valid UTF-8; ATTR additionally MUST contain no C0 control codepoint other than LF, no DEL (U+007F), no NEL (U+0085), no LS (U+2028), and no PS (U+2029) (§ 7.3)"
+        "summary": "SRCD and ATTR payloads MUST be valid UTF-8. ATTR additionally MUST (a) contain no C0 control codepoint other than LF, no DEL (U+007F), no NEL (U+0085), no LS (U+2028), and no PS (U+2029); (b) have non-zero declared length; (c) not end with byte 0x0A (no trailing LF after the last string) (§ 7.3 + § 11 #38)"
       },
       "derived_from": "golden-attr",
       "mutation": "bytes 400..403 (payload[16..19], first '©' UTF-8 plus the following space) 0xC2 0xA9 0x20 → 0xE2 0x80 0xA8 (U+2028); CRC recomputed."
+    },
+    {
+      "name": "neg-38h-attr-trailing-lf",
+      "kind": "negative",
+      "path": "negative/neg-38h-attr-trailing-lf.rawtiles",
+      "description": "Pack with the ATTR section's declared payload length bumped 53 → 54 and the first alignment-pad byte (file 437) promoted to 0x0A. The now-54-byte payload ends with LF, violating § 11 #38(c) (no trailing LF after the last string). The 2 remaining pad bytes stay 0x00, so § 11 #19's pad-zero rule stays quiet; total framed size (8 + 54 + 2 = 64) and section/CRC offsets are unchanged. CRC recomputed.",
+      "spec_refs": [
+        "§ 7.3"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "458ee1d838d8072aa31d5e6025ff211623a333caf6e2f1e1e923467b049dfefc",
+      "expected_reject_rule": {
+        "rule_number": "38",
+        "summary": "SRCD and ATTR payloads MUST be valid UTF-8. ATTR additionally MUST (a) contain no C0 control codepoint other than LF, no DEL (U+007F), no NEL (U+0085), no LS (U+2028), and no PS (U+2029); (b) have non-zero declared length; (c) not end with byte 0x0A (no trailing LF after the last string) (§ 7.3 + § 11 #38)"
+      },
+      "derived_from": "golden-attr",
+      "mutation": "byte 380 (ATTR length field LSB) 0x35 → 0x36 (53 → 54); byte 437 (first alignment-pad byte, now repurposed as the last payload byte) 0x00 → 0x0A; CRC recomputed."
+    },
+    {
+      "name": "neg-38i-attr-empty",
+      "kind": "negative",
+      "path": "negative/neg-38i-attr-empty.rawtiles",
+      "description": "Pack derived from golden-attr by truncating the ATTR section's payload to zero bytes and the file accordingly. The section's declared length field is 0; § 11 #38(b) (spec 0.3) requires non-zero ATTR payload length. file_size 444 → 388; CRC recomputed.",
+      "spec_refs": [
+        "§ 7.3"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "993f7149d24fe9f9133bc9ddd4d4284ba7fb6cccc7b969d41a821fed2bd162ae",
+      "expected_reject_rule": {
+        "rule_number": "38",
+        "summary": "SRCD and ATTR payloads MUST be valid UTF-8. ATTR additionally MUST (a) contain no C0 control codepoint other than LF, no DEL (U+007F), no NEL (U+0085), no LS (U+2028), and no PS (U+2029); (b) have non-zero declared length; (c) not end with byte 0x0A (no trailing LF after the last string) (§ 7.3 + § 11 #38)"
+      },
+      "derived_from": "golden-attr",
+      "mutation": "ATTR section length field 53 → 0; the section's 53-byte payload and 3 pad bytes are dropped from the file; original CRC dropped and a new CRC appended. file_size 444 → 388."
     }
   ]
 }

@@ -154,8 +154,8 @@ Each fixture differs from a known-good golden by **one** byte/field. Every file 
 - [x] `neg-38e-attr-c0-control.rawtiles` — ATTR contains a C0 control byte (e.g. 0x07)
 - [x] `neg-38f-attr-nel.rawtiles` — ATTR contains U+0085 (NEL)
 - [x] `neg-38g-attr-ls.rawtiles` — ATTR contains U+2028 (line separator)
-- [ ] `neg-38h-attr-trailing-lf.rawtiles` — ATTR ends with a trailing LF *(blocked: § 11 #38 as currently worded explicitly excludes U+000A; needs spec amendment to restate § 7.3's no-trailing-LF rule)*
-- [ ] `neg-38i-attr-empty.rawtiles` — ATTR with zero-length payload *(blocked: § 11 #38 as currently worded covers UTF-8 + forbidden codepoints only; needs spec amendment to restate § 7.3's non-zero-length rule)*
+- [x] `neg-38h-attr-trailing-lf.rawtiles` — ATTR ends with a trailing LF (unblocked in spec 0.3: § 11 #38(c))
+- [x] `neg-38i-attr-empty.rawtiles` — ATTR with zero-length payload (unblocked in spec 0.3: § 11 #38(b))
 
 ### SingleImage shape (§ 8.6) [#23]
 Pick representative violations rather than every sub-condition — one fixture per failure mode that the others reduce to:
@@ -182,4 +182,4 @@ Pick representative violations rather than every sub-condition — one fixture p
 ## Totals
 
 - **Golden corpus:** 17 packs (all planned fixtures shipped). Covers smallest non-empty (§ 14.3), full grid, multi-zoom pyramid, max-zoom (z=23), TMS axis, metadata-only Quadtree, LocalLinear+AFFN SingleImage, ATTR multi-source ordering, multi-locale NAME, supersedes_uuid, format_version_minor=1, ancillary lowercase tag, directional orientation (intra-tile + 4×4 mosaic), Appendix A UUID derivation, and the § 14.4 quantiser test-vector (1-tile + 5-tile).
-- **Negative corpus:** 75 fixtures across 35 of the 38 reject rules (#1–#38). § 11 #4 / #21 are accept-path (covered by goldens); § 11 #30 requires a 4 GiB pack (no fixture). The three reject rules without fixtures are entangled-but-skipped sub-cases (#23a, #23e) or spec-amendment-blocked (#38h, #38i).
+- **Negative corpus:** 77 fixtures across 35 of the 38 reject rules (#1–#38). § 11 #4 / #21 are accept-path (covered by goldens); § 11 #30 requires a 4 GiB pack (no fixture). The two reject sub-cases without fixtures are entangled-but-skipped (#23a, #23e).
