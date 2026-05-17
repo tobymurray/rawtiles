@@ -22,13 +22,17 @@ from pathlib import Path
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
     from generators import (
+        golden_ancillary_tag,
         golden_attr,
         golden_empty_quadtree,
         golden_grid,
+        golden_minor_1,
         golden_orientation,
         golden_orientation_mosaic,
         golden_singleimage_affn,
         golden_smallest,
+        golden_supersedes,
+        neg_01_short_file,
         neg_02_bad_magic,
         neg_03_major_2,
         neg_05_uuid_zero,
@@ -59,13 +63,17 @@ if __package__ in (None, ""):
     )
 else:
     from . import (
+        golden_ancillary_tag,
         golden_attr,
         golden_empty_quadtree,
         golden_grid,
+        golden_minor_1,
         golden_orientation,
         golden_orientation_mosaic,
         golden_singleimage_affn,
         golden_smallest,
+        golden_supersedes,
+        neg_01_short_file,
         neg_02_bad_magic,
         neg_03_major_2,
         neg_05_uuid_zero,
@@ -104,6 +112,10 @@ GENERATORS = [
     golden_attr,
     golden_orientation,
     golden_orientation_mosaic,
+    golden_minor_1,
+    golden_ancillary_tag,
+    golden_supersedes,
+    neg_01_short_file,
     neg_02_bad_magic,
     neg_03_major_2,
     *neg_05_uuid_zero.FIXTURES,

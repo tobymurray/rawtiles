@@ -120,6 +120,64 @@
       "hashes_sha256": "af3396d4e9df825461072da83a2e47093d977fb3ed3269fe0b41cb8b2b525758"
     },
     {
+      "name": "golden-minor-1",
+      "kind": "golden",
+      "path": "golden/golden-minor-1.rawtiles",
+      "description": "Minimum-legal pack identical to golden-smallest except `format_version_minor = 1`. Pins the § 11 #4 accept path: readers MUST accept (1, x) packs for any minor x, applying §§ 7.2 and 8 to whatever the pack contains.",
+      "spec_refs": [
+        "§ 4.2",
+        "§ 14.3"
+      ],
+      "expected_outcome": "accept",
+      "pack_sha256": "7a9b930af2e8c7dfb92a4f7df4c9d201cfce429b456225f83084c9af7ca9d4e0",
+      "hashes_path": "golden/golden-minor-1.hashes",
+      "hashes_sha256": "78627ed359ed0ab84bad4cabcf66cd726901a6647346f7cb509793c9a315ed7a"
+    },
+    {
+      "name": "golden-ancillary-tag",
+      "kind": "golden",
+      "path": "golden/golden-ancillary-tag.rawtiles",
+      "description": "1-tile pack identical to golden-smallest except for one extension section with the unknown lower-case tag `xnot` and a 4-byte ASCII payload `test`. Pins the § 11 #21 accept path: readers MUST accept and MAY ignore unknown lower-case-first tags. File size 392 bytes.",
+      "spec_refs": [
+        "§ 7.2"
+      ],
+      "expected_outcome": "accept",
+      "pack_sha256": "e9fa2f75f3186f85352c9292a0c7839b07a2479938552269b3df06267c41a07a",
+      "hashes_path": "golden/golden-ancillary-tag.hashes",
+      "hashes_sha256": "78627ed359ed0ab84bad4cabcf66cd726901a6647346f7cb509793c9a315ed7a"
+    },
+    {
+      "name": "golden-supersedes",
+      "kind": "golden",
+      "path": "golden/golden-supersedes.rawtiles",
+      "description": "1-tile pack identical to golden-smallest except `supersedes_uuid` (header bytes 24..40) is set to a non-zero deterministic UUID. The only v1 corpus fixture with supersedes_uuid != 0; pins the accept path for § 4.4's non-sentinel value.",
+      "spec_refs": [
+        "§ 4.4"
+      ],
+      "expected_outcome": "accept",
+      "pack_sha256": "3abace4e72bc35d100e79d5c230edef2f0d41fbcc802f5d3ad89809d5f7661df",
+      "hashes_path": "golden/golden-supersedes.hashes",
+      "hashes_sha256": "78627ed359ed0ab84bad4cabcf66cd726901a6647346f7cb509793c9a315ed7a"
+    },
+    {
+      "name": "neg-01-short-file",
+      "kind": "negative",
+      "path": "negative/neg-01-short-file.rawtiles",
+      "description": "Pack truncated to 295 bytes (one less than the legal minimum 296). Header is intact in the first 292 bytes; the final 3 bytes are the first 3 bytes of the would-be tile-index entry. No CRC footer.",
+      "spec_refs": [
+        "§ 3",
+        "§ 11"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "771b931228e07cea362ef2daca70d38605432a4fadb44a85ab8db3e6c2dc720a",
+      "expected_reject_rule": {
+        "rule_number": "1",
+        "summary": "file size MUST be ≥ 296 bytes (292-byte header + 4-byte CRC footer) per § 11 #1"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "Truncated golden-smallest (380 bytes) to its first 295 bytes; CRC footer is absent. file_size 380 → 295."
+    },
+    {
       "name": "neg-02-bad-magic",
       "kind": "negative",
       "path": "negative/neg-02-bad-magic.rawtiles",

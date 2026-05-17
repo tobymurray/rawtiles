@@ -41,15 +41,15 @@ Each pack ships with a sibling `<pack>.hashes` file per § 14.5.
 - [ ] `golden-tms.rawtiles` — `tile_axis_convention = TMS`; covers the §§ 4.9 / 6.2 / 8.4 TMS branch
 - [x] `golden-empty-quadtree.rawtiles` — Quadtree with `tile_count = 0`, NAME-only or ATTR-only payload; § 8.6 metadata-only path
 - [ ] `golden-names-multilocale.rawtiles` — multiple `NAME` sections including `tag_length=0` fallback; pins § 7.4 + § 12.1 NAME ordering (the `zh` vs `en-US` byte-order trap)
-- [ ] `golden-supersedes.rawtiles` — non-zero `supersedes_uuid`
+- [x] `golden-supersedes.rawtiles` — non-zero `supersedes_uuid`
 - [ ] `golden-zmax.rawtiles` — tile at `z = 23` (max legal zoom) and `(x, y)` near `2^23 − 1`
 - [ ] `golden-canonical-uuid.rawtiles` — pack whose `pack_uuid` is derived per Appendix A, verifying the derivation pipeline against the § A.5 worked example methodology
 - [x] `golden-orientation.rawtiles` — 256×256 directional test tile (RED/BLUE/GREEN/YELLOW edge stripes + BLACK/WHITE/MAGENTA/CYAN corner dots) covering § 6.2 row order, § 8.4 XYZ axis, and § 9.1 ABGR2222 saturated palette; lets a renderer detect intra-tile orientation-pipeline bugs by eye
 - [x] `golden-orientation-mosaic.rawtiles` — 4×4 grid at z=2, 32×32 px tiles; same intra-tile pattern as `golden-orientation` plus a 24×24 interior byte encoding `0xD0 + (y << 2) + x` per tile, so the composed 128×128 mosaic marches the 16 interior colors `0xD0..0xDF` in row-major order; catches inter-tile placement bugs (x/y swap, row inversion) that `golden-orientation` cannot see
 
 ### Accept-path positives (cover § 11 rules that are accept, not reject)
-- [ ] `golden-minor-1.rawtiles` — `format_version = (1, 1)`; covers § 11 #4 (readers MUST accept) plus a v1.x-introduced ancillary tag for plausibility
-- [ ] `golden-ancillary-tag.rawtiles` — pack carrying an unknown lower-case extension tag (e.g. `xnot`); covers § 11 #21 (readers MUST accept and MAY ignore)
+- [x] `golden-minor-1.rawtiles` — `format_version = (1, 1)`; covers § 11 #4 (readers MUST accept) — kept tag-free for clean rule-#4 isolation; the ancillary-tag accept path is anchored by golden-ancillary-tag instead
+- [x] `golden-ancillary-tag.rawtiles` — pack carrying an unknown lower-case extension tag (`xnot`); covers § 11 #21 (readers MUST accept and MAY ignore)
 
 ---
 
@@ -58,7 +58,7 @@ Each pack ships with a sibling `<pack>.hashes` file per § 14.5.
 Each fixture differs from a known-good golden by **one** byte/field. Every file MUST be rejected by a conforming reader.
 
 ### Header / file structure
-- [ ] `neg-01-short-file.rawtiles` — file < 296 bytes [#1]
+- [x] `neg-01-short-file.rawtiles` — file < 296 bytes [#1]
 - [x] `neg-02-bad-magic.rawtiles` — first 4 bytes ≠ `RAWT` [#2]
 - [x] `neg-03-major-2.rawtiles` — `format_version_major = 2` [#3]
 - [x] `neg-05-uuid-zero.rawtiles` — `pack_uuid` = all-zero [#5]
