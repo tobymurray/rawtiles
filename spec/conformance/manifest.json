@@ -1232,6 +1232,23 @@
       "mutation": "file[324..328] (entry 1 `offset`, u32 LE) 676 → 672; CRC recomputed."
     },
     {
+      "name": "neg-33-padding-nonzero",
+      "kind": "negative",
+      "path": "negative/neg-33-padding-nonzero.rawtiles",
+      "description": "1-tile Quadtree pack with tile_dim_px = 3 (length = 9, requiring 3 per-tile pad bytes to 4-align extensions_offset). The first pad byte at file offset 321 is set to 0xFF, violating § 6.1's zero-fill requirement. file_size 328.",
+      "spec_refs": [
+        "§ 6.1"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "c8142c3ad2f964f066b956a597be08dfe308aa61c1932f2adfea8b87b82fbaf6",
+      "expected_reject_rule": {
+        "rule_number": "33",
+        "summary": "per-tile alignment padding bytes in the tile blob MUST be 0x00 (§ 6.1 + § 11 #33)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "Built from scratch in the shape of golden-smallest but with tile_dim_px = 3 (so tile length = 9 is not 4-aligned and 3 padding bytes follow the tile in the blob). The first per-tile pad byte at file offset 321 is set to 0xFF; the other 2 pad bytes remain 0x00. file_size 328; CRC fresh."
+    },
+    {
       "name": "neg-34-affn-length",
       "kind": "negative",
       "path": "negative/neg-34-affn-length.rawtiles",

@@ -107,7 +107,7 @@ Each fixture differs from a known-good golden by **one** byte/field. Every file 
 - [x] `neg-31b-y-overflow.rawtiles` — Quadtree entry `y ≥ 2^z` [#31]
 - [x] `neg-32a-tile-gap.rawtiles` — gap between consecutive tiles (offset > expected) [#32]
 - [x] `neg-32b-tile-overlap.rawtiles` — tiles overlap (offset < expected) [#32]
-- [ ] `neg-33-padding-nonzero.rawtiles` — non-zero byte in per-tile alignment padding [#33]
+- [x] `neg-33-padding-nonzero.rawtiles` — non-zero byte in per-tile alignment padding [#33]
 
 ### zoom_offsets directory (§ 4.12) [#17]
 - [x] `neg-17a-count-mismatch.rawtiles` — `zoom_offsets[z].count` ≠ actual count at z
