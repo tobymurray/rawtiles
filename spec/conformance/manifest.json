@@ -478,6 +478,57 @@
       "mutation": "file[308] (tile-index entry 0 `length` LSB) 0x40 → 0x3F (length 64 → 63); CRC recomputed."
     },
     {
+      "name": "neg-17a-count-mismatch",
+      "kind": "negative",
+      "path": "negative/neg-17a-count-mismatch.rawtiles",
+      "description": "Pack with zoom_offsets[0].count = 2 but only one actual tile-index entry at zoom 0; all other fields valid; CRC recomputed.",
+      "spec_refs": [
+        "§ 4.12"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "504529561995d1c7adda55375e26d637392a4a43081d96988630c8774443ea43",
+      "expected_reject_rule": {
+        "rule_number": "17",
+        "summary": "zoom_offsets[z].count MUST equal the actual count of tile-index entries at zoom z; when count > 0, .offset MUST equal the byte offset of the first such entry; when count == 0, .offset MUST be 0 (§ 4.12 + § 11 #17)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "header[100..104] (zoom_offsets[0].count, u32 LE) 1 → 2; CRC recomputed."
+    },
+    {
+      "name": "neg-17b-offset-mismatch",
+      "kind": "negative",
+      "path": "negative/neg-17b-offset-mismatch.rawtiles",
+      "description": "Pack with zoom_offsets[0].offset = 296 but the actual first (and only) z = 0 tile-index entry starts at byte 292; count = 1 stays consistent with the one entry present, isolating the offset sub-clause; CRC recomputed.",
+      "spec_refs": [
+        "§ 4.12"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "95836b00ea128b82d6ac61753826c1b1e7dc4705df60e27ba7db6daff667e9b6",
+      "expected_reject_rule": {
+        "rule_number": "17",
+        "summary": "zoom_offsets[z].count MUST equal the actual count of tile-index entries at zoom z; when count > 0, .offset MUST equal the byte offset of the first such entry; when count == 0, .offset MUST be 0 (§ 4.12 + § 11 #17)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "header[96..100] (zoom_offsets[0].offset, u32 LE) 292 → 296; CRC recomputed."
+    },
+    {
+      "name": "neg-17c-offset-nonzero-empty",
+      "kind": "negative",
+      "path": "negative/neg-17c-offset-nonzero-empty.rawtiles",
+      "description": "Pack derived from golden-empty-quadtree (tile_count = 0) with zoom_offsets[0].offset = 292 alongside count = 0. Rule #17's third sub-clause requires offset = 0 when count = 0; CRC recomputed.",
+      "spec_refs": [
+        "§ 4.12"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "e41529ffcd77e0db07777bfbe7cdb7c483ef4cf647e27c943cf752cb727a2b92",
+      "expected_reject_rule": {
+        "rule_number": "17",
+        "summary": "zoom_offsets[z].count MUST equal the actual count of tile-index entries at zoom z; when count > 0, .offset MUST equal the byte offset of the first such entry; when count == 0, .offset MUST be 0 (§ 4.12 + § 11 #17)"
+      },
+      "derived_from": "golden-empty-quadtree",
+      "mutation": "header[96..100] (zoom_offsets[0].offset, u32 LE) 0 → 292; CRC recomputed."
+    },
+    {
       "name": "neg-19a-section-overruns",
       "kind": "negative",
       "path": "negative/neg-19a-section-overruns.rawtiles",
@@ -630,6 +681,40 @@
       },
       "derived_from": "golden-attr",
       "mutation": "Appended a second ATTR section with payload 'Other source' (12 bytes) directly after the existing ATTR section; file_size 444 → 464; CRC recomputed."
+    },
+    {
+      "name": "neg-35a-affn-nan",
+      "kind": "negative",
+      "path": "negative/neg-35a-affn-nan.rawtiles",
+      "description": "Pack with AFFN coefficient `f` (the y-offset) overwritten with the 8-byte LE encoding of a quiet NaN (0x7FF8_0000_0000_0000). Section framing, length field, projection, and bbox are all unchanged; CRC recomputed.",
+      "spec_refs": [
+        "§ 7.3"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "b00d8fc5b1c1f78bfa0a82a2dbe9e17b77332745c3bdca5fbcc7cda753f45b86",
+      "expected_reject_rule": {
+        "rule_number": "35",
+        "summary": "all six AFFN coefficients MUST be finite IEEE-754 binary64 values (no NaN, no ±∞); readers MUST reject violations (§ 7.3 + § 11 #35)"
+      },
+      "derived_from": "golden-singleimage-affn",
+      "mutation": "bytes 424..432 (AFFN payload coef[5] `f`, IEEE-754 binary64 LE) 1.0 → 0x7FF8_0000_0000_0000 (quiet NaN); CRC recomputed."
+    },
+    {
+      "name": "neg-35b-affn-inf",
+      "kind": "negative",
+      "path": "negative/neg-35b-affn-inf.rawtiles",
+      "description": "Pack with AFFN coefficient `f` overwritten with the 8-byte LE encoding of +∞ (0x7FF0_0000_0000_0000). Section framing, length field, projection, and bbox are all unchanged; CRC recomputed.",
+      "spec_refs": [
+        "§ 7.3"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "0b1666b45168d16c8baef3297ca1a65d24c8f5b898316c93ae4ed34e8c585fad",
+      "expected_reject_rule": {
+        "rule_number": "35",
+        "summary": "all six AFFN coefficients MUST be finite IEEE-754 binary64 values (no NaN, no ±∞); readers MUST reject violations (§ 7.3 + § 11 #35)"
+      },
+      "derived_from": "golden-singleimage-affn",
+      "mutation": "bytes 424..432 (AFFN payload coef[5] `f`, IEEE-754 binary64 LE) 1.0 → 0x7FF0_0000_0000_0000 (+∞); CRC recomputed."
     },
     {
       "name": "neg-38a-srcd-bad-utf8",

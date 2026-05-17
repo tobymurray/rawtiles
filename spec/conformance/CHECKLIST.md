@@ -110,9 +110,9 @@ Each fixture differs from a known-good golden by **one** byte/field. Every file 
 - [ ] `neg-33-padding-nonzero.rawtiles` — non-zero byte in per-tile alignment padding [#33]
 
 ### zoom_offsets directory (§ 4.12) [#17]
-- [ ] `neg-17a-count-mismatch.rawtiles` — `zoom_offsets[z].count` ≠ actual count at z
-- [ ] `neg-17b-offset-mismatch.rawtiles` — `zoom_offsets[z].offset` ≠ first-entry-byte-offset at z
-- [ ] `neg-17c-offset-nonzero-empty.rawtiles` — `zoom_offsets[z] = (nonzero, 0)`
+- [x] `neg-17a-count-mismatch.rawtiles` — `zoom_offsets[z].count` ≠ actual count at z
+- [x] `neg-17b-offset-mismatch.rawtiles` — `zoom_offsets[z].offset` ≠ first-entry-byte-offset at z
+- [x] `neg-17c-offset-nonzero-empty.rawtiles` — `zoom_offsets[z] = (nonzero, 0)`
 
 ### extensions_offset (§ 4.13) [#18]
 - [ ] `neg-18a-extoff-misaligned.rawtiles` — `extensions_offset` not 4-aligned
@@ -135,8 +135,8 @@ Each fixture differs from a known-good golden by **one** byte/field. Every file 
 ### AFFN (§ 7.3) [#22, #34, #35, #36]
 - [ ] `neg-22-locallinear-no-affn.rawtiles` — `projection = LocalLinear` and no AFFN section [#22]
 - [ ] `neg-34-affn-length-not-48.rawtiles` — AFFN `length = 40` [#34]
-- [ ] `neg-35a-affn-nan.rawtiles` — AFFN coefficient is NaN [#35]
-- [ ] `neg-35b-affn-inf.rawtiles` — AFFN coefficient is +∞ [#35]
+- [x] `neg-35a-affn-nan.rawtiles` — AFFN coefficient is NaN [#35]
+- [x] `neg-35b-affn-inf.rawtiles` — AFFN coefficient is +∞ [#35]
 - [ ] `neg-36-affn-in-webmerc.rawtiles` — AFFN present with `projection ≠ LocalLinear` [#36]
 
 ### NAME (§ 7.4) [#26, #37]

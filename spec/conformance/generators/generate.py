@@ -40,6 +40,7 @@ if __package__ in (None, ""):
         neg_11_bbox,
         neg_12_entry_flags,
         neg_16_length_mismatch,
+        neg_17_zoom_offsets,
         neg_19_framing,
         neg_19c_stranded,
         neg_20_unknown_uppercase_tag,
@@ -48,6 +49,7 @@ if __package__ in (None, ""):
         neg_27_tag_first_byte,
         neg_28_tag_nonprintable,
         neg_29a_duplicate_attr,
+        neg_35_affn_nonfinite,
         neg_38_attr_text,
     )
 else:
@@ -70,6 +72,7 @@ else:
         neg_11_bbox,
         neg_12_entry_flags,
         neg_16_length_mismatch,
+        neg_17_zoom_offsets,
         neg_19_framing,
         neg_19c_stranded,
         neg_20_unknown_uppercase_tag,
@@ -78,6 +81,7 @@ else:
         neg_27_tag_first_byte,
         neg_28_tag_nonprintable,
         neg_29a_duplicate_attr,
+        neg_35_affn_nonfinite,
         neg_38_attr_text,
     )
 
@@ -101,6 +105,7 @@ GENERATORS = [
     *neg_11_bbox.FIXTURES,
     *neg_12_entry_flags.FIXTURES,
     neg_16_length_mismatch,
+    *neg_17_zoom_offsets.FIXTURES,
     *neg_19_framing.FIXTURES,
     neg_19c_stranded,
     neg_20_unknown_uppercase_tag,
@@ -109,6 +114,7 @@ GENERATORS = [
     neg_27_tag_first_byte,
     neg_28_tag_nonprintable,
     neg_29a_duplicate_attr,
+    *neg_35_affn_nonfinite.FIXTURES,
     *neg_38_attr_text.FIXTURES,
 ]
 SPEC_VERSION = "0.1"
