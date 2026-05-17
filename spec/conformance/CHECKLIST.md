@@ -30,7 +30,7 @@ Each pack ships with a sibling `<pack>.hashes` file per § 14.5.
 
 ### Named in spec § 14.5
 - [x] `golden-grid.rawtiles` — regular full grid at a single zoom; the "largest single-zoom layout" of § 14.3
-- [ ] `golden-pyramid.rawtiles` — multi-zoom; exercises every populated slot of the `zoom_offsets[24]` indirection
+- [x] `golden-pyramid.rawtiles` — multi-zoom; exercises every populated slot of the `zoom_offsets[24]` indirection
 - [x] `golden-attr.rawtiles` — exercises extension framing/padding and ATTR multi-source ordering per § 12.1 / Appendix A.4
 - [ ] `golden-png-to-pack-1tile.rawtiles` — end-to-end PNG → quantiser → pack pipeline; one tile
 - [ ] `golden-png-to-pack-5tiles.rawtiles` — same pipeline, multi-tile; pins resample/alpha-handling output
@@ -38,7 +38,7 @@ Each pack ships with a sibling `<pack>.hashes` file per § 14.5.
 ### Gap-fillers (not named in spec, but the v1 surface needs them)
 - [x] `golden-smallest.rawtiles` — minimum-legal non-empty pack (1 tile, no extensions); the "smallest non-empty pack" of § 14.3
 - [x] `golden-singleimage-affn.rawtiles` — `(LocalLinear, SingleImage)` with AFFN; the only path that exercises § 7.3 AFFN encoding and § 4.9 LocalLinear bbox derivation
-- [ ] `golden-tms.rawtiles` — `tile_axis_convention = TMS`; covers the §§ 4.9 / 6.2 / 8.4 TMS branch
+- [x] `golden-tms.rawtiles` — `tile_axis_convention = TMS`; covers the §§ 4.9 / 6.2 / 8.4 TMS branch
 - [x] `golden-empty-quadtree.rawtiles` — Quadtree with `tile_count = 0`, NAME-only or ATTR-only payload; § 8.6 metadata-only path
 - [ ] `golden-names-multilocale.rawtiles` — multiple `NAME` sections including `tag_length=0` fallback; pins § 7.4 + § 12.1 NAME ordering (the `zh` vs `en-US` byte-order trap)
 - [x] `golden-supersedes.rawtiles` — non-zero `supersedes_uuid`
@@ -77,8 +77,8 @@ Each fixture differs from a known-good golden by **one** byte/field. Every file 
 - [x] `neg-07g-comp-1.rawtiles` — reserved `compression = 1` (LZ4)
 
 ### Legal enum pair (§ 8.6) [#8]
-- [ ] `neg-08a-webmerc-singleimage.rawtiles` — `(WebMercator, SingleImage)`
-- [ ] `neg-08b-locallinear-quadtree.rawtiles` — `(LocalLinear, Quadtree)`
+- [x] `neg-08a-webmerc-singleimage.rawtiles` — `(WebMercator, SingleImage)`
+- [x] `neg-08b-locallinear-quadtree.rawtiles` — `(LocalLinear, Quadtree)`
 
 ### Zoom (§ 4.8) [#10]
 - [x] `neg-10a-zmax-24.rawtiles` — `zoom_max = 24`

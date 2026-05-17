@@ -160,6 +160,37 @@
       "hashes_sha256": "78627ed359ed0ab84bad4cabcf66cd726901a6647346f7cb509793c9a315ed7a"
     },
     {
+      "name": "golden-pyramid",
+      "kind": "golden",
+      "path": "golden/golden-pyramid.rawtiles",
+      "description": "Full pyramid for zooms 0..2: 1 + 4 + 16 = 21 tiles at 8×8 px each, WebMercator/Quadtree/XYZ, no extension sections. Exercises § 5.2 multi-zoom tile-index ordering, § 4.12 zoom_offsets with three populated slots, § 5.3 multi-level binary search, and § 14.5 multi-row .hashes table.",
+      "spec_refs": [
+        "§ 4.12",
+        "§ 5.2",
+        "§ 5.3",
+        "§ 14.3",
+        "§ 14.5"
+      ],
+      "expected_outcome": "accept",
+      "pack_sha256": "78c111ede3a8dee79ae5fb08e9fb8df02d5da96e70010dd6f2e477b0043aa55e",
+      "hashes_path": "golden/golden-pyramid.hashes",
+      "hashes_sha256": "3de49de1fd13404313c4204c5cbdc398465eb7899c80fb7339374a9e6d762e35"
+    },
+    {
+      "name": "golden-tms",
+      "kind": "golden",
+      "path": "golden/golden-tms.rawtiles",
+      "description": "1-tile pack identical to golden-smallest except `tile_axis_convention = 2` (TMS). The only v1 fixture exercising the TMS branch of § 4.9 (WebMercator y'-substitution) and § 6.2 (tile row order: first row southernmost). Single-tile at z=0 makes the y'-substitution a no-op, so the canonical bbox matches the XYZ baseline; the fixture pins the header-parse accept path.",
+      "spec_refs": [
+        "§ 6.2",
+        "§ 8.4"
+      ],
+      "expected_outcome": "accept",
+      "pack_sha256": "b352ca548e46730d2e716a356f0944c62490d62097a543d945159e1836151eb2",
+      "hashes_path": "golden/golden-tms.hashes",
+      "hashes_sha256": "78627ed359ed0ab84bad4cabcf66cd726901a6647346f7cb509793c9a315ed7a"
+    },
+    {
       "name": "neg-01-short-file",
       "kind": "negative",
       "path": "negative/neg-01-short-file.rawtiles",
@@ -363,6 +394,40 @@
       },
       "derived_from": "golden-smallest",
       "mutation": "compression byte (file offset 293) 0 → 1 (reserved, LZ4); CRC recomputed."
+    },
+    {
+      "name": "neg-08a-webmerc-singleimage",
+      "kind": "negative",
+      "path": "negative/neg-08a-webmerc-singleimage.rawtiles",
+      "description": "Pack derived from golden-smallest with tile_addressing_scheme switched 1 (Quadtree) → 2 (SingleImage) while projection stays at 1 (WebMercator). golden-smallest already satisfies every SingleImage shape condition, so rule #23 stays quiet; the only violation is § 8.6's legal-pair constraint. CRC recomputed.",
+      "spec_refs": [
+        "§ 8.6"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "0a5ef420ca769d14bf51803ec5eaf6bfbd2c96aafc90457ffd49553cd1b12af5",
+      "expected_reject_rule": {
+        "rule_number": "8",
+        "summary": "the (projection, tile_addressing_scheme) pair MUST be one of the two legal v1 combinations in § 8.6: (WebMercator, Quadtree) or (LocalLinear, SingleImage); any other pairing MUST be rejected (§ 8.6 + § 11 #8)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "header[58] (tile_addressing_scheme) 1 (Quadtree) → 2 (SingleImage); CRC recomputed."
+    },
+    {
+      "name": "neg-08b-locallinear-quadtree",
+      "kind": "negative",
+      "path": "negative/neg-08b-locallinear-quadtree.rawtiles",
+      "description": "Pack derived from golden-singleimage-affn with tile_addressing_scheme switched 2 (SingleImage) → 1 (Quadtree) while projection stays at 3 (LocalLinear). The AFFN section remains valid (rule #22, #34, #35 stay quiet); zoom_offsets and the lone entry stay consistent for Quadtree's 1-tile layout; rule #23 no longer applies. The pair is the lone violation. CRC recomputed.",
+      "spec_refs": [
+        "§ 8.6"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "9d7bd73a642b973bc6fb3d72333d58a3353477ff4487267676e65684a91ce1ba",
+      "expected_reject_rule": {
+        "rule_number": "8",
+        "summary": "the (projection, tile_addressing_scheme) pair MUST be one of the two legal v1 combinations in § 8.6: (WebMercator, Quadtree) or (LocalLinear, SingleImage); any other pairing MUST be rejected (§ 8.6 + § 11 #8)"
+      },
+      "derived_from": "golden-singleimage-affn",
+      "mutation": "header[58] (tile_addressing_scheme) 2 (SingleImage) → 1 (Quadtree); CRC recomputed."
     },
     {
       "name": "neg-09-tiledim-zero",
