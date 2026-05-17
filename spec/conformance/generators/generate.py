@@ -24,6 +24,7 @@ if __package__ in (None, ""):
     from generators import (
         golden_ancillary_tag,
         golden_attr,
+        golden_canonical_uuid,
         golden_empty_quadtree,
         golden_grid,
         golden_minor_1,
@@ -81,6 +82,7 @@ else:
     from . import (
         golden_ancillary_tag,
         golden_attr,
+        golden_canonical_uuid,
         golden_empty_quadtree,
         golden_grid,
         golden_minor_1,
@@ -151,6 +153,7 @@ GENERATORS = [
     golden_tms,
     golden_zmax,
     golden_names_multilocale,
+    golden_canonical_uuid,
     neg_01_short_file,
     neg_02_bad_magic,
     neg_03_major_2,

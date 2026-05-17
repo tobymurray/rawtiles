@@ -224,6 +224,24 @@
       "hashes_sha256": "78627ed359ed0ab84bad4cabcf66cd726901a6647346f7cb509793c9a315ed7a"
     },
     {
+      "name": "golden-canonical-uuid",
+      "kind": "golden",
+      "path": "golden/golden-canonical-uuid.rawtiles",
+      "description": "1-tile WebMercator/Quadtree/XYZ pack identical in shape to golden-smallest, except `pack_uuid` is derived via the Appendix A canonical pipeline (UUIDv5 over the rawtiles namespace + JCS-canonicalized descriptor): 70850b7c-62c2-56db-900b-eba2feb7b489. Module self-tests reproduce § A.5's worked example end-to-end (intermediate SHA-1 and final UUID must match the spec) before any byte is emitted; a build failure means the JCS pipeline is broken. The descriptor's lone source is `synthetic` (fixture_version=1), which skips the writer-pipeline content_hash.",
+      "spec_refs": [
+        "§ 4.3",
+        "§ A.1",
+        "§ A.2",
+        "§ A.3",
+        "§ A.4",
+        "§ A.5"
+      ],
+      "expected_outcome": "accept",
+      "pack_sha256": "7cd25a96dc231872aadff09dd9404c2efebd5e57cb07f4e8c6e26b953d52357b",
+      "hashes_path": "golden/golden-canonical-uuid.hashes",
+      "hashes_sha256": "78627ed359ed0ab84bad4cabcf66cd726901a6647346f7cb509793c9a315ed7a"
+    },
+    {
       "name": "neg-01-short-file",
       "kind": "negative",
       "path": "negative/neg-01-short-file.rawtiles",
