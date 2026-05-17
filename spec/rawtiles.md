@@ -4,11 +4,11 @@ nav_order: 1
 permalink: /
 ---
 
-# rawtiles format specification — version 0.2
+# rawtiles format specification — version 0.4
 
-**Status:** Provisional. The spec is in its v0.x phase: breaking changes between v0.x bumps MAY invalidate existing `pack_uuid`s and existing packs. v1.0 stabilizes the wire format once a second independent consumer has validated against this spec; until then, fixtures and on-disk packs are not guaranteed forward-compatible.
-**Date:** 2026-05-15.
-**Wire format version**: the `format_version` bytes in conforming packs are `(1, 0)`. The spec-document version (`0.2`) is distinct from the on-disk wire-format-version bytes (see § 13 for the version semantics).
+**Status:** Provisional. The spec is in its v0.x phase: breaking changes between v0.x bumps MAY invalidate existing `pack_uuid`s and existing packs. v1.0 stabilizes the wire format once a second independent consumer has validated against this spec; until then, fixtures and on-disk packs are not guaranteed forward-compatible. v0.4 adds the `RGB565` pixel format, byte-level run-length compression, and a streaming reader-conformance tier; the additions are wire-format-additive and pre-v0.4 ABGR2222 packs remain valid under v0.4 Tier-1 readers.
+**Date:** 2026-05-17.
+**Wire format version**: the `format_version` bytes in conforming packs are `(1, 0)`. The spec-document version (`0.4`) is distinct from the on-disk wire-format-version bytes (see § 13 for the version semantics).
 
 This document defines the `.rawtiles` binary file format: a byte-level contract between writers (tile-pack builders) and readers (firmware, validators, debug tools, future device-side consumers). Conforming implementations on either side need only this document. The format is intended for offline tile delivery to constrained devices (watches, embedded displays, kiosks, e-readers) where bandwidth and decode budgets are tight.
 
@@ -32,6 +32,8 @@ This document defines the `.rawtiles` binary file format: a byte-level contract 
 - **Tile** — an addressed byte blob, identified by `(z, x, y)` for quadtree packs or by virtue of being the single image in a single-image pack.
 - **Section** — one of the five top-level regions of a pack: *header*, *tile index*, *tile blob*, *extensions*, *footer*.
 - **Reserved value** — a byte or tag value whose semantics are deliberately undefined in this version. Writers MUST NOT emit reserved values; readers MUST reject packs that contain them.
+- **Tier-1 reader** / **Tier-2 reader** — the two reader-side conformance profiles defined in § 11.1. A Tier-1 reader buffers the full pack and validates every § 11 rule at open time. A Tier-2 reader holds only the 292-byte header (plus per-call scratch) resident, validates the eager subset at open time, and defers the lazy subset to first-access time per § 11.2. Both produce the same caller-facing tile bytes for valid packs.
+- **`bytes_per_pixel(pixel_format)`** — a function from `pixel_format` (§ 8.1) to the on-disk uncompressed byte count for one pixel: `ABGR2222 → 1`, `RGB565 → 2`. Defined in § 6.2.
 
 ## 3. File structure
 
@@ -215,7 +217,7 @@ A conforming pack satisfies all of:
 
 - Entries are sorted ascending by `(z, x, y)`: `z` values non-decreasing, and within each contiguous run of entries sharing the same `z`, the `(x, y)` values strictly ascending in lexicographic order (the order § 5.3's binary search depends on).
 - `z < 24` for every entry.
-- `compression` is a value supported by the writer's `format_version` per § 8.5. (v1: only `0 = None`.)
+- `compression` is a value supported by the writer's `format_version` per § 8.5. (v1: `0 = None` and `1 = RLE8`.)
 - `flags = 0` and `reserved = 0` for every entry in v1. Readers MUST reject non-zero values.
 - `offset` is 4-byte aligned and lies within the tile blob (i.e. `offset ≥ tile_blob_start`, per § 3).
 - `offset + length ≤ extensions_offset`.
@@ -244,7 +246,18 @@ The tile blob is the contiguous region from the (padded) end of the tile index t
 
 The byte content of a tile is determined by `pixel_format` (§ 8.1) and `compression` (§ 8.5).
 
-For v1 with `pixel_format = ABGR2222` and `compression = None`, every tile is exactly `tile_dim_px × tile_dim_px` bytes in row-major order: top-to-bottom rows, left-to-right within each row, one byte per pixel. The first row is the northernmost pixel row under `tile_axis_convention = XYZ` and the southernmost under `TMS` (§ 8.4). No intra-tile padding.
+**Bytes per pixel.** Each v1 pixel format has a fixed on-disk uncompressed byte width:
+
+| `pixel_format` | `bytes_per_pixel` | uncompressed tile bytes |
+|---|---:|---|
+| `ABGR2222` (1) | 1 | `tile_dim_px²` |
+| `RGB565` (2) | 2 | `tile_dim_px² × 2` |
+
+The function `bytes_per_pixel(pixel_format)` is referenced by §§ 6.2, 11 #16, and 14, and is normative.
+
+**Uncompressed layout (`compression = None`).** Every tile is exactly `tile_dim_px × tile_dim_px × bytes_per_pixel(pixel_format)` bytes in row-major order: top-to-bottom rows, left-to-right within each row. The first row is the northernmost pixel row under `tile_axis_convention = XYZ` and the southernmost under `TMS` (§ 8.4). No intra-tile padding. Multi-byte pixels (RGB565) are stored at their natural byte width with intra-pixel layout per § 9; pixels do NOT cross row boundaries.
+
+**Compressed layout (`compression ≠ None`).** The tile bytes are the encoded stream defined by the compression's § 9.10 subsection, applied to the uncompressed-byte sequence above. The encoded stream's length is the tile-index entry's `length` field (§ 5.1); it is not bounded a priori by the format and is checked only against file-layout invariants (§ 11 #14). The decoder MUST produce exactly `tile_dim_px² × bytes_per_pixel(pixel_format)` output bytes; a decode that produces a different count is a per-tile decode error and MUST be surfaced through the reader's tile-fetch return path (Tier-1: rejected at open; Tier-2: rejected on `getTile()` for the offending entry). Compression operates on the uncompressed byte stream regardless of `pixel_format`; multi-byte pixels are not granted any pixel-boundary alignment in the compressed stream.
 
 ## 7. Extension sections
 
@@ -354,14 +367,18 @@ In every enum, readers MUST reject any unknown value encountered in the header o
 
 ### 8.1 `pixel_format` (header byte 56)
 
-| Value | Name | Status |
-|---:|---|---|
-| 0 | reserved | reader MUST reject |
-| 1 | `ABGR2222` | v1 |
-| 2 | reserved (`L4` indexed) | reader MUST reject |
-| 3 | reserved (`L2` indexed) | reader MUST reject |
-| 4 | reserved (`BW`, 1-bit) | reader MUST reject |
-| 5–255 | reserved | reader MUST reject |
+| Value | Name | Status | Bytes/pixel |
+|---:|---|---|---:|
+| 0 | reserved | reader MUST reject | — |
+| 1 | `ABGR2222` | v1 (§ 9.1) | 1 |
+| 2 | `RGB565` | v1 (§ 9.2) | 2 |
+| 3 | reserved (`RGB888`) | reader MUST reject | — |
+| 4 | reserved (`L8` grayscale) | reader MUST reject | — |
+| 5 | reserved (`L4` indexed) | reader MUST reject | — |
+| 6 | reserved (`L1`, 1-bit) | reader MUST reject | — |
+| 7–255 | reserved | reader MUST reject | — |
+
+`ABGR2222` is the bytes-per-pixel-minimal format optimised for displays whose framebuffer is 1 byte/pixel (Una's STM32+TouchGFX target). `RGB565` is the native framebuffer encoding for the ST77xx and ILI93xx LCD-controller families used in most low-power wearables (PineTime, many Bangle.js variants); a reader on such a target can render an `RGB565` tile by emitting bytes to the SPI bus with at most a single big/little-endian byteswap per pixel (one Cortex-M `__REV16` instruction). The remaining `pixel_format` values are reserved for future minor bumps as adoption signals warrant.
 
 ### 8.2 `projection` (header byte 57)
 
@@ -399,10 +416,13 @@ Meaningful only when `tile_addressing_scheme = Quadtree`; for SingleImage, write
 
 | Value | Name | Status |
 |---:|---|---|
-| 0 | `None` | v1 |
-| 1 | reserved (`LZ4`) | reader MUST reject |
+| 0 | `None` | v1 (§ 9.10) |
+| 1 | `RLE8` | v1 (§ 9.11) |
 | 2 | reserved (`QOI`) | reader MUST reject |
-| 3–255 | reserved | reader MUST reject |
+| 3 | reserved (`LZ4`) | reader MUST reject |
+| 4–255 | reserved | reader MUST reject |
+
+`RLE8` is the v1 baseline compression: a byte-level run-length encoding (§ 9.11) chosen for simplicity (decoder ~25 lines of C, O(1) working memory, row-streamable) and for delivering meaningful flash savings on the synthetic and indexed map content most commonly packed for low-power wearables. `QOI` and `LZ4` are reserved for future minor bumps when an implementation with conformance fixtures lands; the reservation prevents application-private use of those compression bytes in v1 packs.
 
 ### 8.6 Legal enum combinations and structural constraints
 
@@ -430,7 +450,9 @@ Readers MUST reject `SingleImage` packs that violate any of these.
 
 - `tile_count` MAY be `0` (a metadata-only pack carrying only extension sections). When `tile_count == 0` every `zoom_offsets[z]` MUST be `(0, 0)` (§ 4.12), the tile blob is empty, and `extensions_offset == 292`. Readers MUST accept such packs and report no tiles available rather than treat the pack as malformed.
 
-## 9. Pixel formats
+## 9. Pixel formats and compression
+
+§§ 9.1–9.9 define the v1 pixel formats; §§ 9.10 onward define the v1 compression encodings. The numbering reserves space for additional pixel formats (e.g., a future `RGB888` or grayscale `L8`) to land in §§ 9.3–9.9 without renumbering compression subsections.
 
 ### 9.1 `ABGR2222`
 
@@ -457,9 +479,80 @@ The canonical quantisation maps each 8-bit channel to a 2-bit quantum via thresh
 
 The quantisation is integer-only by construction: any conforming implementation MUST produce byte-identical output for the same input across architectures, languages, and platforms.
 
-This quantisation is identified by `quantiser_version = 1` in Appendix A's descriptor. Any byte-output change to the quantisation requires a `quantiser_version` bump.
+This quantisation is identified by `quantiser_version = 1` in Appendix A's descriptor for `pixel_format = ABGR2222`. Any byte-output change to the quantisation requires a `quantiser_version` bump (per-pixel-format; § A.3).
 
 Conformance test vectors are in § 14.4.
+
+### 9.2 `RGB565`
+
+Each pixel is a 16-bit little-endian word. Bit layout within the 16-bit value, MSB to LSB:
+
+```
+bit:  15 14 13 12 11   10  9  8  7  6  5    4  3  2  1  0
+      └──── R ────┘    └────── G ──────┘   └──── B ────┘
+```
+
+- R is 5 bits, G is 6 bits, B is 5 bits, occupying one 16-bit word per pixel.
+- The 16-bit word is stored **little-endian** on disk, consistent with the general endianness rule of § 1. The low byte (bits 7..0, containing the low 3 bits of G and all 5 bits of B) is at the lower file offset; the high byte (bits 15..8, containing all 5 bits of R and the high 3 bits of G) is at the higher file offset.
+- Each pixel is exactly 2 bytes; tile bytes total `tile_dim_px² × 2` for `compression = None`.
+- No alpha channel. v1 readers MUST treat every `RGB565` pixel as opaque.
+
+**Native-display note.** The ST77xx and ILI93xx LCD-controller families that dominate low-power-wearable hardware (PineTime, most Bangle.js variants, many DIY watch projects) accept RGB565 directly over SPI but expect **big-endian** byte order on the wire (high byte first). A reader on such a target SHOULD byteswap each pixel during the SPI write rather than storing converted pixels in RAM; the Cortex-M `REV16` / `__REV16` instruction performs the byteswap in a single cycle. This convention (LE on disk, BE on wire when the LCD demands it) keeps the on-disk format aligned with § 1's overall endianness rule while imposing only a single-cycle-per-pixel cost on the target whose hardware was the motivating use case.
+
+#### 9.2.1 Canonical conversion from RGB888
+
+The canonical RGB888 → RGB565 conversion uses bit-truncation: drop the low 3 bits of R and B, and the low 2 bits of G. Equivalently, for an input `(r8, g8, b8)`:
+
+```
+r5 = r8 >> 3                                 ; 5 bits
+g6 = g8 >> 2                                 ; 6 bits
+b5 = b8 >> 3                                 ; 5 bits
+pixel16 = (r5 << 11) | (g6 << 5) | b5        ; little-endian on disk
+```
+
+The conversion is integer-only by construction; any conforming implementation MUST produce byte-identical output for the same input across architectures, languages, and platforms. This conversion is identified by `quantiser_version = 1` for `pixel_format = RGB565` in Appendix A's descriptor. Any byte-output change requires a `quantiser_version` bump.
+
+Decoder reconstruction (RGB565 → RGB888 for display libraries that need it) MUST use bit-replication (`r8 = (r5 << 3) | (r5 >> 2)`, etc.); other reconstructions (e.g. zero-fill) produce visibly different output and are non-conforming.
+
+Conformance test vectors are in § 14.7.
+
+### 9.10 Compression: `None` (value 0)
+
+The tile bytes are the uncompressed pixel data as defined in § 6.2. Length-check rule § 11 #16 applies.
+
+### 9.11 Compression: `RLE8` (value 1)
+
+A byte-level run-length encoding. The encoded stream is a sequence of one-byte-prefixed blocks:
+
+```
++--------+----------------+
+| H (1B) | payload        |
++--------+----------------+
+```
+
+`H` is the run header. Its top bit selects the run type, and the low 7 bits give the run length minus one:
+
+- **Literal run**: bit 7 of `H` is `0` (i.e., `H ∈ [0x00, 0x7F]`). The payload is `(H + 1)` literal bytes (1–128 bytes). Decoder copies these bytes verbatim to the output.
+- **Repeat run**: bit 7 of `H` is `1` (i.e., `H ∈ [0x80, 0xFF]`). The payload is exactly **one** byte. Decoder writes that byte `((H & 0x7F) + 1)` times to the output (1–128 repetitions).
+
+Both run types encode 1 to 128 decoded bytes; the encoding has no terminator — the decoder produces exactly `tile_dim_px² × bytes_per_pixel(pixel_format)` output bytes and then stops. If the encoded stream is exhausted before the expected output count is reached, or if a final literal-run's payload extends past the end of the encoded stream, the tile is malformed and the reader MUST surface the error per § 6.2's compressed-layout rule.
+
+**Operates on bytes, not pixels.** For multi-byte pixel formats (currently `RGB565`), the RLE operates on the uncompressed byte stream, not on pixel boundaries. A solid-color RGB565 region of 100 pixels is 200 identical bytes only when the high and low bytes of the pixel happen to match; otherwise the encoder will produce an alternating-byte pattern that does not compress under byte-RLE. This is acceptable: the format chooses simplicity (single encoder for all pixel formats, single decoder, no pixel-width-aware state) over peak compression ratio on multi-byte formats. Pixel-width-aware compression is a candidate for a future minor bump (`QOI`, value 2 reserved).
+
+**Canonical encoding (cross-writer reproducibility).** A writer claiming the round-trip property of § 14.1 MUST emit the canonical RLE encoding, defined as:
+
+1. Greedy: at each position, count the longest run of identical bytes starting at that position. If the run length is `≥ 3`, emit it as a repeat run (capped at 128); otherwise emit literal bytes.
+2. Literal runs are merged: consecutive non-runnable bytes accumulate into a single literal run, capped at 128 bytes (further bytes start a new literal run).
+3. Repeat runs exceeding 128 are split into back-to-back 128-byte repeats followed by a final short repeat or literal block as required.
+4. At every step the encoder MUST prefer a repeat run of length `n ≥ 3` over the equivalent `n`-byte literal run. (For runs of length `n = 2`, either encoding is a single byte longer than the run itself; the canonical writer MUST emit it as a literal run, matching the `≥ 3` threshold above.)
+
+Worst-case expansion (purely literal stream): 1 byte of overhead per 128 input bytes, ≈ 0.78%.
+
+**Decoder state and footprint.** The decoder needs a single one-byte register for `H`, a counter for the current run, and the output cursor — O(1) working memory beyond the output buffer. A Tier-2 reader (§ 11.1) writing decoded pixels directly into a row buffer or directly to the SPI/parallel display bus does not need to hold a whole decoded tile in RAM at any time; the decoder is row-streamable provided the encoder did not place a run boundary that crosses a row boundary in a way the consumer cannot pause (which never occurs — runs are 1..128 bytes and tile rows in v1 are ≥ 1 byte, so a row boundary always falls within or immediately after a complete run-output cursor advance).
+
+The reference RLE8 decoder is ≤ 30 lines of C. A reader that intends to be conforming against `RLE8`-bearing packs MUST implement decoding; readers that do not support `RLE8` MUST reject any pack containing it (the `compression` enum check of § 11 #7 fires per-entry on access for Tier-2).
+
+Conformance test vectors are in § 14.8.
 
 ## 10. Footer (CRC)
 
@@ -467,21 +560,90 @@ The last 4 bytes of the file are a u32 little-endian **CRC-32/ISO-HDLC** value, 
 
 **Scope**: every byte from offset 0 up to (but not including) the CRC's own 4 bytes.
 
-Readers MUST verify the CRC and reject the pack on mismatch. The verification window is conditional, not strict:
+Readers MUST verify the CRC and reject the pack on mismatch. The verification window is conditional, not strict, and the default-vs-opt-in expectation differs by reader tier (§ 11.1):
 
-- **Eager verify** (default): compute the CRC at open time, before any reader API returns success. Simplest; appropriate when open-time latency is not a constraint.
-- **Streaming verify** (MAY): a reader MAY return from open before the CRC is fully computed, provided the verification runs in parallel with structural checks (§ 11 #12–#19, all of which already require a full-byte pass) and completes BEFORE any semantic content derived from the pack (`pack_uuid`, header fields, tile-index entries, extension payloads, tile bytes) is returned to the caller. The reader's open-success/failure status itself, reflecting whether magic and structural checks passed, MAY be returned synchronously since it carries no pack content. A reader that detects mismatch via streaming verify MUST surface the error on the next caller-facing read and invalidate any data already exposed.
-- **Caller-asserted trust** (MAY): a reader MAY skip the CRC entirely when the caller has provided integrity assurance through a separate channel (a signed installer, content-addressed storage, a previously-verified cache, …). The trust assertion is the caller's responsibility, not the reader's. Readers exposing this mode MUST require an explicit opt-in (e.g., a constructor flag, a "trusted source" capability token); the default reader path MUST verify.
+- **Eager verify**: compute the CRC at open time, before any reader API returns success. Simplest; appropriate when open-time latency is not a constraint. This is the default for Tier-1 readers.
+- **Streaming verify**: a reader MAY return from open before the CRC is fully computed, provided the verification runs in parallel with whatever structural checks the reader's tier requires (Tier-1 readers fold streaming verify into the same byte pass as the structural full-walk of §§ 11 #12–#19; Tier-2 readers run streaming verify alongside a header-only structural pass and arm the lazy-rule checks of § 11.2) and completes BEFORE any semantic content derived from the pack (`pack_uuid`, header fields, tile-index entries, extension payloads, tile bytes) is returned to the caller. The reader's open-success/failure status itself, reflecting whether magic and structural checks passed, MAY be returned synchronously since it carries no pack content. A reader that detects mismatch via streaming verify MUST surface the error on the next caller-facing read and invalidate any data already exposed. Streaming verify is allowed as the *default* path for Tier-2 readers (the eager-verify default belongs to Tier-1); a Tier-2 reader that adopts it MUST document the verification window in its caller-facing API.
+- **Caller-asserted trust**: a reader MAY skip the CRC entirely when the caller has provided integrity assurance through a separate channel (a signed installer, content-addressed storage, a previously-verified cache, …). The trust assertion is the caller's responsibility, not the reader's. Readers exposing this mode MUST require an explicit opt-in (e.g., a constructor flag, a "trusted source" capability token). A Tier-1 reader's default path MUST verify. A Tier-2 reader MAY adopt caller-asserted trust as its default, but if it does so the reader MUST document the absence of CRC verification in its caller-facing API; an undocumented "tries to verify, may not have finished" path is not conforming.
 
 ## 11. Reader requirements
 
 This section is the complete reader-side conformance checklist. Every byte-format MUST defined in §§ 4–10 that a reader is responsible for verifying is restated or cross-referenced here, so a reader-implementer can validate against this single list without back-deriving requirements from prose in §§ 4–10.
 
-**Rejection timing.** All rejection rules below (#1 – #38) MUST be enforced before any tile bytes, extension-payload bytes, or extension-tag information are returned to the caller. A reader that interleaves these checks with the CRC verification window of § 10 (i.e., structural rejections folded into the same byte pass as the CRC fold) is conforming. A reader that defers structural rejections to first-lookup time (lazy validation) is NOT conforming. Rule #39 (alignment + endian conversion) applies before any 64-bit-payload-derived value is returned to the caller.
+### 11.1 Conformance tiers
 
-**Conformance scope.** Conforming readers MUST accept any pack that does not violate one of the MUST rules below. § 11 is the complete reader-side rejection checklist; every reader-binding MUST in §§ 4–10 is restated or cross-referenced here. Readers facing operational limits MAY surface those as runtime errors at lookup or render time, and MAY refuse to open packs whose declared resource footprint exceeds the reader's configured limits, provided such refusals are reported through a distinct error path from conformance rejections.
+v1 admits two reader-side conformance profiles. Both produce the same caller-facing tile bytes for valid packs; they differ in when each rejection rule fires and what working-set memory the reader must hold. The two-tier design exists because the deployment surface for this format spans roughly two orders of magnitude in RAM: from MB-class host environments (browsers, desktop validators, build tools) down to MCU-class wearables with ≤ 64 KB SRAM and only ≤ 16 KB realistically available for the tile-pack reader after the rest of the firmware's working set is accounted for.
 
-**Allocation ordering.** Before allocating any buffer sized by the header-supplied `tile_count`, readers MUST validate that the tile index fits within the file. Compute the check overflow-safely as `file_size ≥ 296` AND `tile_count ≤ (file_size − 296) / 20` (division; u32-safe). The naive multiplicative formulation `296 + 20 × tile_count ≤ file_size` wraps on u32 for `tile_count` near `u32::MAX / 20` and MUST NOT be used directly. This bounds malformed-`tile_count` claims to legal file-size budgets and is enforced before rules below that depend on parsed tile-index entries.
+**Tier-1 (Strict).** The reader buffers the full pack (or its equivalent under mmap) and enforces every § 11 rule below at open time. Open-success on a Tier-1 reader means the pack is fully validated — no rule in this section can fire after open. This is the profile a host-class implementation, a writer's round-trip-validator, or any reader without a hard RAM ceiling SHOULD implement.
+
+**Tier-2 (Streaming).** The reader holds the 292-byte header plus a small fixed-size working set (typically the 192-byte `zoom_offsets[24]` directory and a per-call scratch slot) resident; the rest of the pack is read on demand from the underlying storage. Typical backing storage is a memory-mapped flash region accessed via XIP, an offset-and-length `pread`-style API over a filesystem (littlefs, FAT), or a small caller-supplied buffer the reader populates per request. At open time the reader enforces the *eager subset* — every rule it can answer from the header alone, plus the CRC choice of § 10. The remaining rules (the *lazy subset*, classified in § 11.2) are enforced at first-access time for the rule's target: when a tile-index entry is consulted for `getTile()`, when an extension is iterated or queried by tag, when AFFN coefficients are decoded, when a per-tile compression decoder runs, etc. Tier-2 open-success means the header is validated and the lazy checks are armed for per-access firing.
+
+A target-resource sketch for Tier-2: 292 B header + 192 B (within the header) zoom directory + ~64 B scratch + decoder state (24 B for `RLE8`, ≤ tile-row size for row-streaming output) → reader-side working memory ≤ 1 KB for the structural reader, plus whatever pixel buffer the renderer chooses to allocate. This fits comfortably within a 8 KB working-set budget on the smallest nRF52832-class targets after firmware/LVGL overhead.
+
+**Tier choice is per-reader, not per-pack.** Writers MUST NOT emit packs that are conformant only under one tier. The eager / lazy split is purely about *when* checks fire, not *which* invariants the wire format upholds. Every pack a Tier-2 reader accepts must also be acceptable to a Tier-1 reader, and vice versa.
+
+**Documentation requirement.** Readers MUST declare their tier in their caller-facing API or documentation. The two are not silently interchangeable — a tooling consumer that assumes Tier-1 open-success implies whole-pack validity will misinterpret a Tier-2 reader's behavior. Tier-2 readers MUST also document which deferred-check failure modes propagate through which API call (typically `getTile()` and extension iteration), so callers can wire error handling correctly.
+
+**Byte-leak prohibition (both tiers).** A reader MUST NOT return bytes to the caller for which the relevant rule has not yet been enforced. A Tier-2 reader that detects a deferred-check violation mid-call (e.g., decompression-output length doesn't match the format-expected size; per-entry `flags` byte is nonzero; per-section `tag` byte 1 is outside `[A-Z, a-z]`) MUST surface the error through the call that triggered the access — `getTile()` returns an absent-with-error outcome, an extension iterator yields an error rather than a section, an AFFN reader returns a decode-failure status — and MUST NOT return the offending bytes. Partial output written to a caller-supplied row buffer before the error is detected MUST be either zeroed by the reader or marked invalid through the same error path.
+
+### 11.2 Tier-2 lazy classification
+
+A Tier-2 reader MUST enforce the *eager subset* at open time. The eager subset is every rule in § 11.6 below except those listed in this subsection. For the rules listed here, a Tier-2 reader MUST enforce the rule's target at first-access time as specified, and MUST surface a rejection through the reader's per-call error path without leaking the offending bytes (§ 11.1).
+
+| Rule | Target | First-access trigger for Tier-2 |
+|------|---|---|
+| #7 (per-entry `compression` byte) | tile-index entry | entry consulted for `getTile()` |
+| #12 (per-entry `flags` / `reserved`) | tile-index entry | entry access |
+| #13 (entries sorted) | adjacent pair | each step of the § 5.3 binary search verifies the strict-ascending invariant against the two entries it touched; a full-walk equivalent is not required |
+| #14 (per-entry offset/length) | tile-index entry | entry access |
+| #15 (`z` within zoom range) | tile-index entry | entry access |
+| #16 (length matches format) | tile-index entry | entry access |
+| #17 (`zoom_offsets[z]` consistency) | zoom-directory entry | first `getTile()` at that zoom; the binary search's first-entry-touched MUST sit at the byte offset declared by `zoom_offsets[z].offset`, and the search's count bound MUST equal `zoom_offsets[z].count`. Full-walk equivalent not required. |
+| #19 (per-section framing) | extension section | extension iteration or named-section query reaches the section |
+| #20 (unknown upper-case tag) | extension section | reader encounters the section |
+| #22 (`LocalLinear` requires AFFN) | pack-level | first AFFN read or first attempt to interpret a LocalLinear coordinate |
+| #26 (NAME `tag_length` validity) | NAME section | NAME read |
+| #27, #28 (tag byte values) | extension section | reader encounters the section |
+| #29 (duplicate tags) | extension stream | extension iteration or a duplicate-detecting query (e.g., NAME-locale lookup); a Tier-2 reader that never enumerates sections is not obligated to detect duplicates |
+| #31 (Quadtree `x`, `y` < 2^z) | tile-index entry | entry access |
+| #33 (per-tile padding non-zero) | per-tile padding bytes | fires only if the reader reads padding bytes. Tier-2 readers SHOULD skip padding bytes — they are not part of the tile (§ 6.1) — and inherit no obligation; a Tier-2 reader that does not read padding bytes does not violate #33. |
+| #34 (AFFN length) | AFFN section | AFFN read |
+| #35 (AFFN finite) | AFFN section | AFFN read |
+| #36 (AFFN on non-LocalLinear) | AFFN section | AFFN read |
+| #37 (NAME UTF-8 / BCP-47) | NAME section | NAME read |
+| #38 (SRCD/ATTR text rules) | SRCD/ATTR section | section read |
+
+**Rule-specific notes for Tier-2:**
+
+- **#18 (`extensions_offset`).** The eager sub-clauses are: `extensions_offset` 4-byte alignment; `extensions_offset ≤ file_size − 4`; `extensions_offset ≥ tile_blob_start`; and, for `tile_count == 0` Quadtree packs, `extensions_offset == 292`. These are header-resident and eager for both tiers. The padded-sum equality (`extensions_offset == tile_blob_start + Σ padded_length(i)`) is a derived invariant that Tier-1 readers verify during the index walk; Tier-2 readers MAY skip it — the per-entry bounds checks of #14 + #32 (Tier-2 substitution, below) are sufficient for safety.
+
+- **#23 (`SingleImage` shape).** The header-resident sub-clauses (`tile_count == 1`; `zoom_min == 0`; `zoom_max == 0`; `tile_axis_convention == 1`; `zoom_offsets[0].count == 1`; `zoom_offsets[0].offset == index_offset`; `zoom_offsets[1..24]` all-zero) are eager for both tiers. The per-entry sub-clause (the lone entry's `z == x == y == 0`) is lazy for Tier-2 and fires when the SingleImage tile is requested.
+
+- **#32 (tight tile-blob layout).** A Tier-2 reader MAY substitute the weaker per-lookup check `offset ≥ tile_blob_start AND offset + length ≤ extensions_offset` (already required by #14) for the full-walk check of #32. The substitution preserves bounds-safety: malformed offsets cannot escape the tile-blob region. The trade-off is that a malformed pack with gaps between tiles MAY be accepted by Tier-2 readers; the gaps cannot be reached by valid tile-index entries, so there is no exploit surface, only a deviation from the writer-mandated tight layout. Writers MUST still emit the tight layout (§ 12 #8); the substitution is reader-side only and does not change the wire-format invariant.
+
+- **#24 (CRC).** Handled by § 10. Tier-1 readers MUST verify (eagerly or via streaming-during-open). Tier-2 readers MAY adopt streaming verify or caller-asserted trust as their default; the documentation obligation of § 10 applies to whichever mode they pick.
+
+- **#39 (alignment).** Reader-implementation guideline. Both tiers' obligation is unchanged.
+
+- **Rule #21** is an accept rule (unknown lower-case tags); both tiers behave identically.
+
+**Eager subset for both tiers** (all rules not listed above): #1, #2, #3, #4, #5, #6, #7 (header bytes 56–59 only), #8, #9, #10, #11, #21, #25, #30, and the eager sub-clauses of #18 and #23 above.
+
+**Negative-corpus protocol for Tier-2.** Both tiers MUST reject every fixture in the § 11 negative corpus. For a Tier-1 reader, "reject" means open-time failure with an appropriate result code. For a Tier-2 reader, "reject" means either open-time failure (for fixtures whose violated rule is eager) or first-access failure (for fixtures whose violated rule is lazy). The conformance harness MUST drive a Tier-2 reader through the access pattern that surfaces each lazy rule before declaring the reader compliant against that fixture. § 14.6 specifies the per-rule access pattern.
+
+### 11.3 Rejection timing
+
+All rejection rules in § 11.6 (#1 – #38) MUST be enforced before the bytes they protect are returned to the caller. A Tier-1 reader enforces every rule at open time and MAY interleave the checks with the CRC verification window of § 10. A Tier-2 reader enforces the eager subset at open time and the lazy subset at first-access time per § 11.2. Open-success on a Tier-1 reader implies full validation; open-success on a Tier-2 reader implies only that the eager subset passed. Rule #39 (alignment + endian conversion) applies before any 64-bit-payload-derived value is returned to the caller; this obligation is tier-independent.
+
+### 11.4 Conformance scope
+
+Conforming readers MUST accept any pack that does not violate one of the MUST rules below. § 11 is the complete reader-side rejection checklist; every reader-binding MUST in §§ 4–10 is restated or cross-referenced here. Readers facing operational limits MAY surface those as runtime errors at lookup or render time, and MAY refuse to open packs whose declared resource footprint exceeds the reader's configured limits, provided such refusals are reported through a distinct error path from conformance rejections. Resource-limit refusal includes, e.g., a Tier-2 reader rejecting a pack whose `tile_dim_px²` exceeds the reader's tile-row-buffer budget — that refusal is operational, not a § 11 rejection.
+
+### 11.5 Allocation ordering
+
+Before allocating any buffer sized by the header-supplied `tile_count`, readers MUST validate that the tile index fits within the file. Compute the check overflow-safely as `file_size ≥ 296` AND `tile_count ≤ (file_size − 296) / 20` (division; u32-safe). The naive multiplicative formulation `296 + 20 × tile_count ≤ file_size` wraps on u32 for `tile_count` near `u32::MAX / 20` and MUST NOT be used directly. This bounds malformed-`tile_count` claims to legal file-size budgets and is enforced before rules below that depend on parsed tile-index entries. Tier-2 readers that do not allocate a `tile_count`-sized buffer MUST still perform this check at open time, because the same bound is required to bounds-check binary-search entry accesses against the file's tail.
+
+### 11.6 Conforming v1 reader rules
 
 A conforming v1 reader MUST:
 
@@ -500,7 +662,7 @@ A conforming v1 reader MUST:
 13. Reject the pack if entries are not sorted ascending by `(z, x, y)`: `z` non-decreasing across all entries; within each zoom, `(x, y)` strictly ascending lexicographically. The strict-within-zoom property forbids duplicate `(z, x, y)` triples and is what § 5.3's binary search depends on.
 14. For each tile-index entry, reject the pack if any of the following hold, evaluated in order: (a) `offset` is not 4-byte aligned; (b) `offset < tile_blob_start` (§ 3); (c) `offset ≥ extensions_offset`; (d) `length > extensions_offset − offset`. (c) MUST precede (d); the u32 subtraction underflows otherwise. Readers MAY substitute the single u64 check `(u64)offset + (u64)length ≤ (u64)extensions_offset` for (c)+(d).
 15. Reject any tile-index entry with `z > zoom_max` or `z < zoom_min` (§ 4.8).
-16. Reject any tile-index entry whose `length` does not match the format-implied tile-bytes size. For v1's only pixel/compression pair (`pixel_format = ABGR2222`, `compression = None`), `length MUST equal tile_dim_px × tile_dim_px` for every entry.
+16. Reject any tile-index entry whose `length` does not match the format-implied tile-bytes size. For `compression = None`, `length` MUST equal `tile_dim_px × tile_dim_px × bytes_per_pixel(pixel_format)` for every entry (§ 6.2). For `compression ≠ None`, this rule does not apply: the encoded payload length is variable and bounded only by § 11 #14, and the decoder's output-length check (§ 6.2's compressed-layout rule) takes over on tile access.
 17. Reject the pack if `zoom_offsets[z].count` does not equal the actual count of tile-index entries at zoom `z` for any `z`, or if `zoom_offsets[z].offset` does not equal the byte offset of the first index entry at zoom `z` (when `count > 0`) or is non-zero (when `count == 0`).
 18. Reject the pack if `extensions_offset` is not 4-byte aligned, if `extensions_offset > file_size − 4`, if `extensions_offset < tile_blob_start`, or if `extensions_offset ≠ tile_blob_start + Σ⟨padded_length(i) : i ∈ [0, tile_count)⟩` where `padded_length(i) = (length(i) + 3) & ~3` (§ 4.13). For `tile_count == 0` Quadtree packs, the equality reduces to `extensions_offset == 292`.
 19. Reject any extension section whose extent (`tag + length + payload + alignment padding`) is not contained in `[extensions_offset, file_size − 4)` (§ 7.1). Compute the upper-bound check overflow-safely as `length ≤ (file_size − 4) − section_start − 8` (subtraction; u32-safe), not `section_start + 8 + length ≤ file_size − 4` (addition; wraps for large `length`). Additionally: (a) verify that the section's padding bytes (0–3 bytes between `payload` and the next 4-byte boundary) are all `0x00` (§ 7.1); readers MUST reject non-zero padding; (b) after the section-walk loop terminates, reject the pack if the walk's terminal position does not equal `file_size − 4`, i.e., stranded bytes exist between the last section's padded end and the CRC footer.
@@ -612,17 +774,17 @@ This property is the writer's responsibility, not the reader's.
 **Concrete writer obligations.** The round-trip property reduces to four independent obligations that writers must satisfy together. A failure of any one re-opens the dedup gap:
 
 1. **Preprocessing pipeline determinism.** The pipeline from source-file bytes to the pre-quantise RGB888 stream MUST be deterministic for a given writer (§ A.4). The spec does not prescribe a specific decode/resample/alpha-handling pipeline; it prescribes only that a writer's pipeline have a single byte-output for a given input. Two writers with different pipelines are allowed; they will yield different `content_hash`es and thus different `pack_uuid`s, which is the correct behavior.
-2. **Canonical quantiser.** § 9.1.1 + § 14.4 lock the RGB888 → ABGR2222 step. Writers MUST match the listed test-vector output; deviation indicates either a bug or a `quantiser_version` divergence requiring a descriptor bump.
+2. **Canonical quantiser / format conversion.** Each v1 pixel format has a canonical RGB888 → pixel-format conversion pinned by a test vector: ABGR2222 by § 9.1.1 + § 14.4, RGB565 by § 9.2.1 + § 14.7. Writers MUST match the listed test-vector output for the `pixel_format` they emit; deviation indicates either a bug or a `quantiser_version` divergence requiring a descriptor bump (per-pixel-format; § A.3). Writers using `compression ≠ None` MUST additionally match the canonical encoder for that compression (RLE8 by § 9.11 + § 14.8); a non-canonical encoder produces byte-different packs and forfeits the round-trip property of this section.
 3. **`build_timestamp` determinism.** § 4.10 + § 12 #20. `build_timestamp` is in the CRC scope but NOT in the canonical descriptor, so wall-clock values produce byte-different packs with the same `pack_uuid`. Reproducibility-claiming writers MUST derive `build_timestamp` from logical inputs, not wall-clock.
 4. **Text normalisation.** § 7.3. Text-bearing extension payloads (ATTR, SRCD, NAME `name`) MUST be NFC-normalised before emission.
 
 ### 14.2 Cross-implementation gate
 
-Third-party implementations SHOULD pass an independent validator against the committed golden fixtures.
+Third-party implementations SHOULD pass an independent validator against the committed golden fixtures. The golden corpus is tier-agnostic (§ 11.1): both Tier-1 and Tier-2 readers MUST return the same tile bytes for every `(z, x, y)` listed in each pack's hash table (§ 14.5). The negative corpus is tier-aware: § 14.6 specifies the access pattern a Tier-2 reader's harness must drive to exercise each lazy rule.
 
 ### 14.3 Golden fixtures
 
-A corpus of golden fixtures exercises every interesting v1 layout shape: smallest non-empty pack, largest single-zoom layout, multi-zoom `zoom_offsets[24]` directory, extension-section framing and padding (ATTR + multi-source ordering), and the end-to-end decode-quantise-pack pipeline. Any drift requires either a deliberate `quantiser_version` / `format_version` bump or an explicit re-bless under the implementation's documented procedure.
+A corpus of golden fixtures exercises every interesting v1 layout shape: smallest non-empty pack, largest single-zoom layout, multi-zoom `zoom_offsets[24]` directory, extension-section framing and padding (ATTR + multi-source ordering), and the end-to-end decode-quantise-pack pipeline. The corpus also exercises every v1 pixel format / compression combination materially in use: ABGR2222 + None (the v0.3 baseline), RGB565 + None, ABGR2222 + RLE8, and RGB565 + RLE8. Any drift requires either a deliberate `quantiser_version` / `format_version` bump or an explicit re-bless under the implementation's documented procedure.
 
 Third-party implementations SHOULD verify their reader output against the same fixtures.
 
@@ -667,17 +829,75 @@ Lines are sorted ascending by `(z, x, y)`. Comment lines begin with `#`. A third
 
 A reader that mis-implements the binary-search-within-zoom (§ 5.3), the `zoom_offsets[z]` indirection (§ 4.12), or the tile-index entry decoding (§ 5.1) will fail this test even though the byte-equality fixtures of § 14.3 would pass.
 
+Both Tier-1 and Tier-2 readers (§ 11.1) MUST pass the per-tile hash-table check. A Tier-2 reader's `getTile()` SHALL surface the same bytes as a Tier-1 reader's for valid packs; deferring structural checks does not relax the byte-correctness obligation. For RLE8-compressed fixtures the hash digest is computed over the **decoded** tile bytes (the bytes the reader returns to its caller after RLE8 decoding), not over the encoded payload — readers that fail to decode pass no hash.
+
 The hash tables are committed at:
 
-| Pack | Hash table |
-|---|---|
-| `golden-grid.rawtiles` | `golden-grid.hashes` |
-| `golden-pyramid.rawtiles` | `golden-pyramid.hashes` |
-| `golden-attr.rawtiles` | `golden-attr.hashes` |
-| `golden-png-to-pack-1tile.rawtiles` | `golden-png-to-pack-1tile.hashes` |
-| `golden-png-to-pack-5tiles.rawtiles` | `golden-png-to-pack-5tiles.hashes` |
+| Pack | Hash table | `pixel_format` | `compression` |
+|---|---|---|---|
+| `golden-grid.rawtiles` | `golden-grid.hashes` | ABGR2222 | None |
+| `golden-pyramid.rawtiles` | `golden-pyramid.hashes` | ABGR2222 | None |
+| `golden-attr.rawtiles` | `golden-attr.hashes` | ABGR2222 | None |
+| `golden-png-to-pack-1tile.rawtiles` | `golden-png-to-pack-1tile.hashes` | ABGR2222 | None |
+| `golden-png-to-pack-5tiles.rawtiles` | `golden-png-to-pack-5tiles.hashes` | ABGR2222 | None |
+| `golden-rgb565-grid.rawtiles` | `golden-rgb565-grid.hashes` | RGB565 | None |
+| `golden-rle8-abgr.rawtiles` | `golden-rle8-abgr.hashes` | ABGR2222 | RLE8 |
+| `golden-rle8-rgb565.rawtiles` | `golden-rle8-rgb565.hashes` | RGB565 | RLE8 |
 
 Drift in any hash table requires either re-blessing under the implementation's documented procedure (and pairing with a CHANGELOG entry if the bytes also changed) or a deliberate `quantiser_version` / `format_version` bump.
+
+### 14.6 Tier-2 negative-corpus access patterns
+
+For Tier-2 readers (§ 11.1), the negative-corpus test (§ 11.6 / `spec/conformance/negative/`) requires the harness to drive the reader through the access that surfaces each lazy rule. Fixtures whose violated rule is in the eager subset surface on `open()` and need no per-fixture access pattern; fixtures whose violated rule is in the lazy subset surface only when the deferred check fires.
+
+The access pattern by lazy rule:
+
+- **Lazy per-entry rules (#7 compression byte, #12, #14, #15, #16, #31, #32, and #13's pairwise-strict-ascending invariant):** call `getTile(z, x, y)` for the `(z, x, y)` of the offending entry. The reader MUST surface an error through `getTile()`'s return value rather than returning bytes.
+- **Lazy per-extension rules (#19, #20, #26, #27, #28, #29, #34, #35, #36, #37, #38):** iterate the pack's extension sections through the reader's extension API (or call the named-section query that would consume the section). The reader MUST surface an error through the extension API rather than yielding the section.
+- **#17 (zoom_offsets consistency):** call `getTile(z, x, y)` for any `(z, x, y)` at the zoom whose `zoom_offsets[z]` is inconsistent. For an empty-count-but-nonzero-offset fixture (`neg-17c`), call `getTile(z, _, _)` for that `z`; the Tier-2 reader MUST either reject the pack at open or treat the zoom as empty per § 5.3 step 2 — both are conforming because the inconsistency is unobservable through any valid (z, x, y) lookup at that zoom.
+- **#22 (LocalLinear requires AFFN):** query the AFFN section or call any API that consumes AFFN.
+- **#23 per-entry sub-clauses:** call `getTile(0, 0, 0)` on the SingleImage pack; or — for `neg-23b-singleimage-entry-nonzero` — call `getTile(z, x, y)` for the offending entry's coordinates.
+- **#18 padded-sum equality and #33 per-tile padding:** surface only when a Tier-2 reader walks the full tile-index or reads padding bytes — both of which Tier-2 readers are explicitly NOT required to do (§ 11.2). A Tier-2 reader MAY accept fixtures (`neg-18d`, `neg-33`) whose only violation is a derived-invariant or padding-byte deviation. These fixtures count as Tier-1-only.
+
+The conformance harness for Tier-2 readers MUST drive each negative fixture through the access pattern listed above before declaring the reader compliant. Fixtures whose violated rule is unsurfacable through any defined Tier-2 access (`neg-18d`, `neg-33`) are tier-conditional and do NOT count against Tier-2 conformance; the corpus manifest MUST flag them as such.
+
+### 14.7 RGB565 conversion test vector
+
+A conforming writer applying the canonical RGB888 → RGB565 conversion of § 9.2.1 to the § 14.4 input MUST produce the listed output. Mismatch indicates either a conversion bug or a `quantiser_version` divergence for `pixel_format = RGB565`.
+
+Input (48 bytes, RGB888, 16 pixels): same as § 14.4.
+
+Output (32 bytes, RGB565, little-endian on disk; one 16-bit pixel per pair of bytes, low byte first):
+
+```
+0x00, 0xF8,   0xE0, 0x07,   0x1F, 0x00,   0xFF, 0xFF,
+0x00, 0x80,   0x00, 0x04,   0x10, 0x00,   0x10, 0x84,
+0x45, 0x29,   0x45, 0x29,   0xAA, 0x52,   0xEF, 0x7B,
+0x55, 0xAD,   0xBA, 0xD6,   0xBA, 0xD6,   0x00, 0xFC
+```
+
+The pixel-by-pixel derivation for the first row, evidencing the canonical truncation:
+- `(255, 0, 0)` → `(0b11111, 0b000000, 0b00000)` → `0xF800` → bytes `0x00, 0xF8`
+- `(0, 255, 0)` → `(0b00000, 0b111111, 0b00000)` → `0x07E0` → bytes `0xE0, 0x07`
+- `(0, 0, 255)` → `(0b00000, 0b000000, 0b11111)` → `0x001F` → bytes `0x1F, 0x00`
+- `(255, 255, 255)` → `(0b11111, 0b111111, 0b11111)` → `0xFFFF` → bytes `0xFF, 0xFF`
+
+### 14.8 RLE8 round-trip test vector
+
+A conforming RLE8 codec MUST round-trip the following test cases byte-identically. Each case lists `(uncompressed bytes, canonical encoded bytes)`. The encoder under § 9.11's canonical-encoding rules MUST produce the encoded column; the decoder under § 9.11's framing MUST recover the uncompressed column.
+
+| Case | Uncompressed | Canonical encoded | Note |
+|---|---|---|---|
+| 1 | `AA` (1 byte) | `00 AA` | literal-run header `0x00` (run length 1) + 1 literal byte |
+| 2 | `AA BB` (2 bytes) | `01 AA BB` | literal-run header `0x01` (run length 2) + 2 literal bytes — `n=2` repeat threshold (§ 9.11 canonical encoding rule 4) prefers literal here |
+| 3 | `AA AA AA` (3 bytes) | `82 AA` | repeat-run header `0x82` (`0b1000_0010`, repeat length 3) + 1 payload byte |
+| 4 | `00` × 128 (128 zeros) | `FF 00` | max-length single repeat-run header `0xFF` (length 128) + 1 zero byte |
+| 5 | `00` × 129 | `FF 00 00 00` | max repeat-run, then 1-byte literal-run for the remainder (the canonical-encoding rule of § 9.11 selects literal over repeat for run lengths < 3) |
+| 6 | `AA BB CC DD EE` (5 distinct bytes) | `04 AA BB CC DD EE` | literal-run header `0x04` (length 5) + 5 literal bytes |
+| 7 | `AA AA BB BB BB CC` | `01 AA AA 82 BB 00 CC` | 2-byte literal (case-2 rule), 3-byte repeat, 1-byte literal |
+| 8 | empty / 0 bytes | (writers MUST emit at least one block; uncompressed tile size is `tile_dim_px² × bytes_per_pixel` ≥ 1, so empty input never occurs in legal packs) | — |
+
+Mismatch on any encoded column for the listed input indicates a non-canonical encoder; mismatch on the decoded output indicates a decoder bug or framing misinterpretation.
 
 ## 15. File extension and MIME type
 
@@ -734,7 +954,7 @@ Top-level keys, in lex order:
 | `format_version` | `[u8, u8]` | from § 4.2 |
 | `pixel_format` | int | from § 8.1 |
 | `projection` | int | from § 8.2 |
-| `quantiser_version` | int | `1` for v1's `ABGR2222` quantiser; bumped on any byte-output change |
+| `quantiser_version` | int | Version of the canonical RGB888 → `pixel_format` conversion for THIS pack's `pixel_format`. Each `pixel_format` versions its conversion independently. `1` for ABGR2222 (§ 9.1.1 + § 14.4) and `1` for RGB565 (§ 9.2.1 + § 14.7) in v1; a future byte-output change to either format's conversion bumps that format's `quantiser_version` without affecting the other. |
 | `sources` | array | one object per active source, ordered per § A.4 |
 | `style_hash` | hex string or `null` | SHA-256 of the MapLibre style JSON when a renderer-style is in play; `null` otherwise |
 | `tile_addressing_scheme` | int | from § 8.3 |
@@ -830,5 +1050,6 @@ The intermediate SHA-1 is included so independent implementations can bisect a m
 | 0.1 | 2026-05-14 | Initial v0.x release. Wire format `(1, 0)` admits breaking changes between v0.x bumps until v1.0 stabilization. Supersedes the unreleased `1.0-rc1` draft. |
 | 0.2 | 2026-05-15 | § 7.3 + § 14.1: NFC normalisation is MUST-strength for writers emitting text-bearing extension payloads (ATTR, SRCD, NAME `name`). Writer-side tightening; no reader-rejection rules added, no wire-format change. v0.1 packs whose text fields were not NFC-normalised remain readable but are no longer cross-writer-reproducible under v0.2. |
 | 0.3 | 2026-05-17 | § 11 #38: extend the ATTR-specific rejection clause to also fire on (b) zero declared payload length and (c) trailing 0x0A (LF) after the last string. Both invariants already existed in § 7.3's ATTR payload rules; this revision restates them as reader rejections to match the existing codepoint-set clause. § 7.3 ATTR bullets updated with matching "readers MUST reject" language. v0.2 packs with zero-length or trailing-LF ATTR remain *writer-invalid* (those rules predated 0.3) but were previously not required to be reader-rejected; v0.3 readers MUST reject them. |
+| 0.4 | 2026-05-17 | **Cross-device alignment release.** Three additive changes intended to unblock conforming readers and writers on the non-Una half of the target device class (PineTime/InfiniTime, wasp-os, Bangle.js, similar nRF52832-class wearables). (1) **Pixel format `RGB565`** added at `pixel_format = 2` (§ 8.1, § 9.2, § 9.2.1) with canonical RGB888 → RGB565 bit-truncation, little-endian on disk, and explicit ST77xx-family big-endian-on-wire guidance. Conversion test vector at § 14.7. (2) **Compression `RLE8`** added at `compression = 1` (§ 8.5, § 9.11) as the v1 baseline byte-level run-length encoding; decoder ~25 lines of C, O(1) working memory, row-streamable, canonical-encoder rules pinned for cross-writer reproducibility. Round-trip test vector at § 14.8. § 6.2 generalised to define `bytes_per_pixel(pixel_format)` and compressed-vs-uncompressed tile layout. § 11 #16 generalised to match. (3) **Conformance tiers** added: Tier-1 (Strict, current behaviour) and Tier-2 (Streaming) defined in § 11.1, with the lazy-rule classification in § 11.2. § 11 prologue's "lazy validation is NOT conforming" sentence is superseded. § 10 CRC subsection updated to make streaming verify and caller-asserted trust the normative Tier-2 default. § 14.2 / § 14.5 / new § 14.6 specify tier-agnostic golden-corpus correctness and a Tier-2 access-pattern protocol for the negative corpus. Appendix A.3 `quantiser_version` clarified as per-pixel-format. **Wire format unchanged**: existing v0.3 ABGR2222+None packs are byte-compatible with v0.4 readers. **Motivation**: v0.3 silently disqualified the smaller half of the target device class — PineTime-class targets have 64 KB SRAM, RGB565 framebuffers, and ~200 KB usable flash for map data, none of which the v0.3 spec admitted. The three changes together make a conforming Tier-2 RGB565 reader feasible in <1 KB of structural working memory plus a row-buffer-sized decode scratch, and compressed packs that fit a meaningful map area in 200 KB flash budgets. The two-tier design preserves Tier-1's strict-validation guarantees for host-class tooling while opening the bottom of the device-class range. |
 
 Note: the *spec document* version (`0.1`, `0.2`, `1.0`, `1.1`, …) is distinct from the *wire format* `format_version` bytes in the header. Multiple spec-document revisions can describe the same wire format `(1, 0)` if the changes are editorial or normative-clarification only.
