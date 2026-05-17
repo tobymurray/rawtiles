@@ -93,7 +93,7 @@ Each fixture differs from a known-good golden by **one** byte/field. Every file 
 ### Tile-index entry (§ 5) [#12 – #16, #31, #32]
 - [x] `neg-12a-flags-nonzero.rawtiles` — entry `flags ≠ 0` [#12]
 - [x] `neg-12b-reserved-nonzero.rawtiles` — entry `reserved ≠ 0` [#12]
-- [ ] `neg-13a-z-descending.rawtiles` — entries with `z` non-monotone [#13] *(blocked on `golden-pyramid`: needs a multi-zoom base to isolate from rule #17)*
+- [x] `neg-13a-z-non-monotone.rawtiles` — entries with `z` non-monotone [#13]
 - [x] `neg-13b-xy-not-strict.rawtiles` — within a zoom, `(x, y)` not strictly ascending [#13]
 - [x] `neg-13c-duplicate-zxy.rawtiles` — two entries with identical `(z, x, y)` [#13]
 - [ ] `neg-14a-offset-misaligned.rawtiles` — entry `offset` not 4-aligned [#14a]
@@ -105,8 +105,8 @@ Each fixture differs from a known-good golden by **one** byte/field. Every file 
 - [x] `neg-16-length-mismatch.rawtiles` — entry `length ≠ tile_dim_px²` for ABGR2222/None [#16]
 - [x] `neg-31a-x-overflow.rawtiles` — Quadtree entry `x ≥ 2^z` [#31]
 - [x] `neg-31b-y-overflow.rawtiles` — Quadtree entry `y ≥ 2^z` [#31]
-- [ ] `neg-32a-tile-gap.rawtiles` — gap between consecutive tiles (offset > expected) [#32]
-- [ ] `neg-32b-tile-overlap.rawtiles` — tiles overlap (offset < expected) [#32]
+- [x] `neg-32a-tile-gap.rawtiles` — gap between consecutive tiles (offset > expected) [#32]
+- [x] `neg-32b-tile-overlap.rawtiles` — tiles overlap (offset < expected) [#32]
 - [ ] `neg-33-padding-nonzero.rawtiles` — non-zero byte in per-tile alignment padding [#33]
 
 ### zoom_offsets directory (§ 4.12) [#17]

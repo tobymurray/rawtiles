@@ -47,6 +47,7 @@ if __package__ in (None, ""):
         neg_11_bbox,
         neg_12_entry_flags,
         neg_13_index_ordering,
+        neg_13a_z_non_monotone,
         neg_15_z_range,
         neg_16_length_mismatch,
         neg_17_zoom_offsets,
@@ -61,6 +62,7 @@ if __package__ in (None, ""):
         neg_28_tag_nonprintable,
         neg_29a_duplicate_attr,
         neg_31_quadtree_xy,
+        neg_32_tile_placement,
         neg_35_affn_nonfinite,
         neg_38_attr_text,
     )
@@ -91,6 +93,7 @@ else:
         neg_11_bbox,
         neg_12_entry_flags,
         neg_13_index_ordering,
+        neg_13a_z_non_monotone,
         neg_15_z_range,
         neg_16_length_mismatch,
         neg_17_zoom_offsets,
@@ -105,6 +108,7 @@ else:
         neg_28_tag_nonprintable,
         neg_29a_duplicate_attr,
         neg_31_quadtree_xy,
+        neg_32_tile_placement,
         neg_35_affn_nonfinite,
         neg_38_attr_text,
     )
@@ -135,6 +139,7 @@ GENERATORS = [
     *neg_10b_zmin_gt_zmax.FIXTURES,
     *neg_11_bbox.FIXTURES,
     *neg_12_entry_flags.FIXTURES,
+    neg_13a_z_non_monotone,
     *neg_13_index_ordering.FIXTURES,
     *neg_15_z_range.FIXTURES,
     neg_16_length_mismatch,
@@ -150,6 +155,7 @@ GENERATORS = [
     neg_28_tag_nonprintable,
     neg_29a_duplicate_attr,
     *neg_31_quadtree_xy.FIXTURES,
+    *neg_32_tile_placement.FIXTURES,
     *neg_35_affn_nonfinite.FIXTURES,
     *neg_38_attr_text.FIXTURES,
 ]

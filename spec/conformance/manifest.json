@@ -583,6 +583,23 @@
       "mutation": "file[295] (tile-index entry 0 byte 3, reserved) 0 → 1; CRC recomputed."
     },
     {
+      "name": "neg-13a-z-non-monotone",
+      "kind": "negative",
+      "path": "negative/neg-13a-z-non-monotone.rawtiles",
+      "description": "Custom 3-entry pack with one tile per zoom (z ∈ {0, 1, 2}) written in physical order z = [2, 1, 0]. The z sequence across the index is strictly decreasing, violating rule #13's z-non-decreasing arm. zoom_offsets correctly target each entry with count = 1 so directory-consistency (rule #17) stays quiet.",
+      "spec_refs": [
+        "§ 5.2"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "ef1305457af17d76ff3bfabd7d7ad8dc6057568a9f6cd6b0389dc04f4a9297be",
+      "expected_reject_rule": {
+        "rule_number": "13",
+        "summary": "tile-index entries MUST be sorted ascending by (z, x, y): z non-decreasing across all entries; within each zoom, (x, y) strictly ascending lexicographically (§ 11 #13)"
+      },
+      "derived_from": "golden-pyramid",
+      "mutation": "Built from scratch in the shape of a 3-entry pack with one tile per zoom ∈ {0, 1, 2}. Entries written in physical order z = [2, 1, 0] so the (z) sequence across the index is strictly decreasing — violating rule #13's `z non-decreasing` arm. zoom_offsets[0..2] each point at their respective entry's byte offset with count = 1, so rule #17 stays quiet; tile_blob_start, entry offsets, and extensions_offset are sequential 4-aligned so rules #14, #32, #18 stay quiet."
+    },
+    {
       "name": "neg-13b-xy-not-strict",
       "kind": "negative",
       "path": "negative/neg-13b-xy-not-strict.rawtiles",
@@ -975,6 +992,40 @@
       },
       "derived_from": "golden-grid",
       "mutation": "file[600] (entry 15 `y` LSB) 0x03 → 0x04; CRC recomputed."
+    },
+    {
+      "name": "neg-32a-tile-gap",
+      "kind": "negative",
+      "path": "negative/neg-32a-tile-gap.rawtiles",
+      "description": "Pack derived from golden-grid with entry 1's `offset` field bumped 676 → 680, leaving a 4-byte gap between tile 0 (612..676) and tile 1 (now 680..744). Subsequent entries' offsets are untouched, so entry 1 alone is misplaced. CRC recomputed.",
+      "spec_refs": [
+        "§ 12.1"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "d7fe39758ef303b05278355bd3ff28c515cc58f009639ed5963e45c82bb4a250",
+      "expected_reject_rule": {
+        "rule_number": "32",
+        "summary": "for each tile-index entry i, offset(i) MUST equal tile_blob_start + Σ padded_length(j) for j < i; tiles MUST sit consecutively in the blob with no gap and no overlap (§ 12 #8 + § 11 #32)"
+      },
+      "derived_from": "golden-grid",
+      "mutation": "file[324..328] (entry 1 `offset`, u32 LE) 676 → 680; CRC recomputed."
+    },
+    {
+      "name": "neg-32b-tile-overlap",
+      "kind": "negative",
+      "path": "negative/neg-32b-tile-overlap.rawtiles",
+      "description": "Pack derived from golden-grid with entry 1's `offset` field decremented 676 → 672, so tile 1's declared range (672..736) overlaps tile 0 (612..676) by 4 bytes. CRC recomputed.",
+      "spec_refs": [
+        "§ 12.1"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "f364edcc730cefadd25c1d77b942b2483ae405b772b56e0e670e08b5138dd921",
+      "expected_reject_rule": {
+        "rule_number": "32",
+        "summary": "for each tile-index entry i, offset(i) MUST equal tile_blob_start + Σ padded_length(j) for j < i; tiles MUST sit consecutively in the blob with no gap and no overlap (§ 12 #8 + § 11 #32)"
+      },
+      "derived_from": "golden-grid",
+      "mutation": "file[324..328] (entry 1 `offset`, u32 LE) 676 → 672; CRC recomputed."
     },
     {
       "name": "neg-35a-affn-nan",
