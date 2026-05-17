@@ -159,11 +159,11 @@ Each fixture differs from a known-good golden by **one** byte/field. Every file 
 
 ### SingleImage shape (§ 8.6) [#23]
 Pick representative violations rather than every sub-condition — one fixture per failure mode that the others reduce to:
-- [ ] `neg-23a-singleimage-tilecount-2.rawtiles` — `tile_count = 2` *(blocked: needs reshape-style builder; § 5.2 strict-ascending entangles with a second entry)*
+- [x] `neg-23a-singleimage-tilecount.rawtiles` — `tile_count = 2`
 - [x] `neg-23b-singleimage-entry-nonzero.rawtiles` — lone entry has `(z, x, y) ≠ (0, 0, 0)`
 - [x] `neg-23c-singleimage-zmax-nonzero.rawtiles` — header `zoom_max = 5`
 - [x] `neg-23d-singleimage-axis-tms.rawtiles` — `tile_axis_convention = 2` (TMS)
-- [ ] `neg-23e-singleimage-zoomoffsets-leak.rawtiles` — `zoom_offsets[1]` non-zero *(blocked: any leak entangles with rule #17 directory consistency)*
+- [x] `neg-23e-singleimage-zoomoffsets-leak.rawtiles` — `zoom_offsets[1]` non-zero (rule #17 co-fires; same pattern as neg-14/neg-18)
 
 ### CRC (§ 10) [#24]
 - [x] `neg-24-crc-flipped.rawtiles` — final 4 bytes XOR'd with `0x00000001`
@@ -182,4 +182,4 @@ Pick representative violations rather than every sub-condition — one fixture p
 ## Totals
 
 - **Golden corpus:** 17 packs (all planned fixtures shipped). Covers smallest non-empty (§ 14.3), full grid, multi-zoom pyramid, max-zoom (z=23), TMS axis, metadata-only Quadtree, LocalLinear+AFFN SingleImage, ATTR multi-source ordering, multi-locale NAME, supersedes_uuid, format_version_minor=1, ancillary lowercase tag, directional orientation (intra-tile + 4×4 mosaic), Appendix A UUID derivation, and the § 14.4 quantiser test-vector (1-tile + 5-tile).
-- **Negative corpus:** 77 fixtures across 35 of the 38 reject rules (#1–#38). § 11 #4 / #21 are accept-path (covered by goldens); § 11 #30 requires a 4 GiB pack (no fixture). The two reject sub-cases without fixtures are entangled-but-skipped (#23a, #23e).
+- **Negative corpus:** 79 fixtures across 35 of the 38 reject rules. § 11 #4 / #21 are accept-path (covered by goldens); § 11 #30 requires a 4 GiB pack (no fixture). Every other § 11 rejection rule is anchored by at least one fixture.

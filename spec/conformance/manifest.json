@@ -1093,6 +1093,41 @@
       "mutation": "header[59] (tile_axis_convention) 1 (XYZ) → 2 (TMS); CRC recomputed."
     },
     {
+      "name": "neg-23a-singleimage-tilecount",
+      "kind": "negative",
+      "path": "negative/neg-23a-singleimage-tilecount.rawtiles",
+      "description": "Custom 2-entry SingleImage pack: shape of golden-singleimage-affn with tile_count = 2, two entries at (0,0,0) and (0,0,1), and zoom_offsets[0] = (292, 2). Rule #23's `tile_count == 1` arm fires; rules #13/#14/#17/#18/#22/#34/#35/#36 all stay quiet.",
+      "spec_refs": [
+        "§ 8.6"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "cdf20351435de9413e089f06c24e7a0a8d9d20977b6ff893387a6865dd28923f",
+      "expected_reject_rule": {
+        "rule_number": "23",
+        "summary": "SingleImage packs MUST satisfy ALL of: tile_count == 1; the lone entry is (z=0, x=0, y=0); zoom_min == zoom_max == 0; tile_axis_convention == 1; zoom_offsets[0] == (index_offset, 1); every zoom_offsets[z ∈ [1, 23]] == (0, 0) (§ 8.6 + § 11 #23)"
+      },
+      "derived_from": "golden-singleimage-affn",
+      "mutation": "Built from scratch in the shape of golden-singleimage-affn but with tile_count = 2 and two tile-index entries at (z=0, x=0, y=0) and (z=0, x=0, y=1); zoom_offsets[0] = (292, 2) so rule #17 stays quiet; AFFN section retained verbatim at relocated offset 460. file_size 520."
+    },
+    {
+      "name": "neg-23e-singleimage-zoomoffsets-leak",
+      "kind": "negative",
+      "path": "negative/neg-23e-singleimage-zoomoffsets-leak.rawtiles",
+      "description": "SingleImage pack with zoom_offsets[1].offset set to 292 while zoom_offsets[1].count stays 0. Violates rule #23's `every zoom_offsets[z ∈ [1, 23]] is (0, 0)` conjunct. Rule #17(c) (offset MUST be 0 when count == 0) inherently co-fires; the same-base mutation can't isolate from #17 because any non-zero value at z ∈ [1, 23] that doesn't add a real entry breaks both. CRC recomputed.",
+      "spec_refs": [
+        "§ 4.12",
+        "§ 8.6"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "a92f0888dcedcf6039a3c378c4a77ea06579c234aaa894641b101dc83bfdbd94",
+      "expected_reject_rule": {
+        "rule_number": "23",
+        "summary": "SingleImage packs MUST satisfy ALL of: tile_count == 1; the lone entry is (z=0, x=0, y=0); zoom_min == zoom_max == 0; tile_axis_convention == 1; zoom_offsets[0] == (index_offset, 1); every zoom_offsets[z ∈ [1, 23]] == (0, 0) (§ 8.6 + § 11 #23)"
+      },
+      "derived_from": "golden-singleimage-affn",
+      "mutation": "file[104..108] (zoom_offsets[1].offset, u32 LE) 0 → 292; CRC recomputed."
+    },
+    {
       "name": "neg-24-crc-flipped",
       "kind": "negative",
       "path": "negative/neg-24-crc-flipped.rawtiles",
