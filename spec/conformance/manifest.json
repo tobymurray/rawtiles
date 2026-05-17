@@ -191,6 +191,22 @@
       "hashes_sha256": "78627ed359ed0ab84bad4cabcf66cd726901a6647346f7cb509793c9a315ed7a"
     },
     {
+      "name": "golden-names-multilocale",
+      "kind": "golden",
+      "path": "golden/golden-names-multilocale.rawtiles",
+      "description": "1-tile WebMercator pack with four NAME sections (tag_length=0 fallback, `en`, `zh`, `en-US`) in canonical § 12.1 byte-order. Pins the `zh` vs `en-US` byte-order trap: a writer that sorts by BCP-47 string would put `en-US` before `zh`, but the byte-order rule puts `zh` (length 2) before `en-US` (length 5) because the tag_length byte at payload offset 0 dominates. Exercises § 7.4 NAME payload layout, § 7.3 NFC text rules, and § 12.1 multi-instance section ordering. File size 456 bytes.",
+      "spec_refs": [
+        "§ 7.3",
+        "§ 7.4",
+        "§ 12.1",
+        "§ 14.5"
+      ],
+      "expected_outcome": "accept",
+      "pack_sha256": "12d70b951635baa3bce2d3e0ce2e225862c382ffd3e64ae000e30af98f057fc8",
+      "hashes_path": "golden/golden-names-multilocale.hashes",
+      "hashes_sha256": "78627ed359ed0ab84bad4cabcf66cd726901a6647346f7cb509793c9a315ed7a"
+    },
+    {
       "name": "neg-01-short-file",
       "kind": "negative",
       "path": "negative/neg-01-short-file.rawtiles",

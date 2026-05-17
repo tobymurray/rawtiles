@@ -40,7 +40,7 @@ Each pack ships with a sibling `<pack>.hashes` file per § 14.5.
 - [x] `golden-singleimage-affn.rawtiles` — `(LocalLinear, SingleImage)` with AFFN; the only path that exercises § 7.3 AFFN encoding and § 4.9 LocalLinear bbox derivation
 - [x] `golden-tms.rawtiles` — `tile_axis_convention = TMS`; covers the §§ 4.9 / 6.2 / 8.4 TMS branch
 - [x] `golden-empty-quadtree.rawtiles` — Quadtree with `tile_count = 0`, NAME-only or ATTR-only payload; § 8.6 metadata-only path
-- [ ] `golden-names-multilocale.rawtiles` — multiple `NAME` sections including `tag_length=0` fallback; pins § 7.4 + § 12.1 NAME ordering (the `zh` vs `en-US` byte-order trap)
+- [x] `golden-names-multilocale.rawtiles` — multiple `NAME` sections including `tag_length=0` fallback; pins § 7.4 + § 12.1 NAME ordering (the `zh` vs `en-US` byte-order trap)
 - [x] `golden-supersedes.rawtiles` — non-zero `supersedes_uuid`
 - [ ] `golden-zmax.rawtiles` — tile at `z = 23` (max legal zoom) and `(x, y)` near `2^23 − 1`
 - [ ] `golden-canonical-uuid.rawtiles` — pack whose `pack_uuid` is derived per Appendix A, verifying the derivation pipeline against the § A.5 worked example methodology
