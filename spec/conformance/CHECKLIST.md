@@ -133,7 +133,7 @@ Each fixture differs from a known-good golden by **one** byte/field. Every file 
 - [ ] `neg-29b-duplicate-name-locale.rawtiles` — two `NAME` sections with identical `bcp47_tag` [#29]
 
 ### AFFN (§ 7.3) [#22, #34, #35, #36]
-- [ ] `neg-22-locallinear-no-affn.rawtiles` — `projection = LocalLinear` and no AFFN section [#22]
+- [x] `neg-22-locallinear-no-affn.rawtiles` — `projection = LocalLinear` and no AFFN section [#22]
 - [ ] `neg-34-affn-length-not-48.rawtiles` — AFFN `length = 40` [#34]
 - [x] `neg-35a-affn-nan.rawtiles` — AFFN coefficient is NaN [#35]
 - [x] `neg-35b-affn-inf.rawtiles` — AFFN coefficient is +∞ [#35]
@@ -159,11 +159,11 @@ Each fixture differs from a known-good golden by **one** byte/field. Every file 
 
 ### SingleImage shape (§ 8.6) [#23]
 Pick representative violations rather than every sub-condition — one fixture per failure mode that the others reduce to:
-- [ ] `neg-23a-singleimage-tilecount-2.rawtiles` — `tile_count = 2`
-- [ ] `neg-23b-singleimage-zxy-nonzero.rawtiles` — lone entry has `(z, x, y) = (0, 1, 0)`
-- [ ] `neg-23c-singleimage-zmax-nonzero.rawtiles` — header `zoom_max = 5`
-- [ ] `neg-23d-singleimage-axis-tms.rawtiles` — `tile_axis_convention = 2` (TMS)
-- [ ] `neg-23e-singleimage-zoomoffsets-leak.rawtiles` — `zoom_offsets[1]` non-zero
+- [ ] `neg-23a-singleimage-tilecount-2.rawtiles` — `tile_count = 2` *(blocked: needs reshape-style builder; § 5.2 strict-ascending entangles with a second entry)*
+- [x] `neg-23b-singleimage-entry-nonzero.rawtiles` — lone entry has `(z, x, y) ≠ (0, 0, 0)`
+- [x] `neg-23c-singleimage-zmax-nonzero.rawtiles` — header `zoom_max = 5`
+- [x] `neg-23d-singleimage-axis-tms.rawtiles` — `tile_axis_convention = 2` (TMS)
+- [ ] `neg-23e-singleimage-zoomoffsets-leak.rawtiles` — `zoom_offsets[1]` non-zero *(blocked: any leak entangles with rule #17 directory consistency)*
 
 ### CRC (§ 10) [#24]
 - [x] `neg-24-crc-flipped.rawtiles` — final 4 bytes XOR'd with `0x00000001`

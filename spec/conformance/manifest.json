@@ -665,6 +665,75 @@
       "mutation": "bytes 376..380 (section tag) `ATTR` → `XYZQ`; CRC recomputed."
     },
     {
+      "name": "neg-22-locallinear-no-affn",
+      "kind": "negative",
+      "path": "negative/neg-22-locallinear-no-affn.rawtiles",
+      "description": "Pack derived from golden-singleimage-affn by removing the AFFN extension section (56 bytes: tag+length+payload). The remaining pack still declares projection = LocalLinear but carries no AFFN, directly violating § 7.3's 'AFFN MUST appear when LocalLinear'. file_size 436 → 380; CRC recomputed.",
+      "spec_refs": [
+        "§ 7.3"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "9149719a38816e55b950da9bc0ffcb2e5d582b5d9969635502aa593e141e92f3",
+      "expected_reject_rule": {
+        "rule_number": "22",
+        "summary": "projection = LocalLinear packs MUST contain exactly one AFFN extension section (§ 7.3 + § 11 #22)"
+      },
+      "derived_from": "golden-singleimage-affn",
+      "mutation": "Removed bytes 376..432 (AFFN section: 4-byte tag + 4-byte length + 48-byte payload); file_size 436 → 380; CRC recomputed over the new body."
+    },
+    {
+      "name": "neg-23b-singleimage-entry-nonzero",
+      "kind": "negative",
+      "path": "negative/neg-23b-singleimage-entry-nonzero.rawtiles",
+      "description": "SingleImage pack with the lone entry at (z=0, x=0, y=1) instead of (0, 0, 0). Header/zoom_offsets unchanged; CRC recomputed.",
+      "spec_refs": [
+        "§ 8.6"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "b0452e484ad1f21dcd8aac1e635c9576624e06b220c82317457adcd371ab174b",
+      "expected_reject_rule": {
+        "rule_number": "23",
+        "summary": "SingleImage packs MUST satisfy ALL of: tile_count == 1; the lone entry is (z=0, x=0, y=0); zoom_min == zoom_max == 0; tile_axis_convention == 1; zoom_offsets[0] == (index_offset, 1); every zoom_offsets[z ∈ [1, 23]] == (0, 0) (§ 8.6 + § 11 #23)"
+      },
+      "derived_from": "golden-singleimage-affn",
+      "mutation": "file[300] (entry 0 `y` LSB) 0x00 → 0x01; CRC recomputed."
+    },
+    {
+      "name": "neg-23c-singleimage-zmax-nonzero",
+      "kind": "negative",
+      "path": "negative/neg-23c-singleimage-zmax-nonzero.rawtiles",
+      "description": "SingleImage pack with header.zoom_max bumped 0 → 5. zoom_min stays at 0 (so rule #10 stays quiet); the lone entry remains at z = 0 within [0, 5] (so rule #15 stays quiet); zoom_offsets remain consistent (so rule #17 stays quiet). CRC recomputed.",
+      "spec_refs": [
+        "§ 8.6"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "c05a4b9556aead97c033e512b13077176e9fc021a568462dd6c21d01de3350a9",
+      "expected_reject_rule": {
+        "rule_number": "23",
+        "summary": "SingleImage packs MUST satisfy ALL of: tile_count == 1; the lone entry is (z=0, x=0, y=0); zoom_min == zoom_max == 0; tile_axis_convention == 1; zoom_offsets[0] == (index_offset, 1); every zoom_offsets[z ∈ [1, 23]] == (0, 0) (§ 8.6 + § 11 #23)"
+      },
+      "derived_from": "golden-singleimage-affn",
+      "mutation": "header[63] (zoom_max) 0 → 5; CRC recomputed."
+    },
+    {
+      "name": "neg-23d-singleimage-axis-tms",
+      "kind": "negative",
+      "path": "negative/neg-23d-singleimage-axis-tms.rawtiles",
+      "description": "SingleImage pack with tile_axis_convention set to 2 (TMS) instead of the SingleImage-required 1 (XYZ). 2 is a known enum value (§ 8.4 lists it for Quadtree), so rule #7 stays quiet; rule #23 is the lone violation. CRC recomputed.",
+      "spec_refs": [
+        "§ 8.4",
+        "§ 8.6"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "1ae6a51a7e41d1fc758b5b8e75d7089e8fceaa9c88448baa75f7f68186a465ab",
+      "expected_reject_rule": {
+        "rule_number": "23",
+        "summary": "SingleImage packs MUST satisfy ALL of: tile_count == 1; the lone entry is (z=0, x=0, y=0); zoom_min == zoom_max == 0; tile_axis_convention == 1; zoom_offsets[0] == (index_offset, 1); every zoom_offsets[z ∈ [1, 23]] == (0, 0) (§ 8.6 + § 11 #23)"
+      },
+      "derived_from": "golden-singleimage-affn",
+      "mutation": "header[59] (tile_axis_convention) 1 (XYZ) → 2 (TMS); CRC recomputed."
+    },
+    {
       "name": "neg-24-crc-flipped",
       "kind": "negative",
       "path": "negative/neg-24-crc-flipped.rawtiles",
