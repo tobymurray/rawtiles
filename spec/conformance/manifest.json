@@ -634,6 +634,74 @@
       "mutation": "file[320] (entry 1 `y` LSB) 0x01 → 0x00; CRC recomputed."
     },
     {
+      "name": "neg-14a-offset-misaligned",
+      "kind": "negative",
+      "path": "negative/neg-14a-offset-misaligned.rawtiles",
+      "description": "Pack with entry 0's `offset` set to 313 (not 4-aligned). Rule #14a fires first per § 11 #14's evaluation order. Rule #32 (per-tile placement) also fires; either rejection satisfies the test. CRC recomputed.",
+      "spec_refs": [
+        "§ 5.1"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "d412fa5cec2b995f798f5f4645e6ce143f97687e9db66cef6cc07fcda4931892",
+      "expected_reject_rule": {
+        "rule_number": "14",
+        "summary": "for each tile-index entry, evaluated in order: (a) offset MUST be 4-aligned; (b) offset ≥ tile_blob_start; (c) offset < extensions_offset; (d) length ≤ extensions_offset − offset (§ 11 #14)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "file[304..308] (entry 0 `offset`, u32 LE) 312 → 313; CRC recomputed."
+    },
+    {
+      "name": "neg-14b-offset-below-blob",
+      "kind": "negative",
+      "path": "negative/neg-14b-offset-below-blob.rawtiles",
+      "description": "Pack with entry 0's `offset` set to 288 (inside the header, below tile_blob_start = 312). Rule #14b fires; #14a quiet (288 is 4-aligned), #14d quiet (64 ≤ 376 − 288). Rule #32 also fires. CRC recomputed.",
+      "spec_refs": [
+        "§ 5.1"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "877064333b2e697c77db4e4515f5cc3c9881a2586007df817599748028629667",
+      "expected_reject_rule": {
+        "rule_number": "14",
+        "summary": "for each tile-index entry, evaluated in order: (a) offset MUST be 4-aligned; (b) offset ≥ tile_blob_start; (c) offset < extensions_offset; (d) length ≤ extensions_offset − offset (§ 11 #14)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "file[304..308] (entry 0 `offset`, u32 LE) 312 → 288; CRC recomputed."
+    },
+    {
+      "name": "neg-14c-offset-past-ext",
+      "kind": "negative",
+      "path": "negative/neg-14c-offset-past-ext.rawtiles",
+      "description": "Pack with entry 0's `offset` set to 376 (= extensions_offset). Rule #14c fires first per the evaluation order; #14d would also fire (64 > 0) but the spec orders (c) before (d). Rule #32 also fires. CRC recomputed.",
+      "spec_refs": [
+        "§ 5.1"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "fdae7532e618c89998092f6ad53dbf5ff790b4f098c9f6eb69874435f8f7a942",
+      "expected_reject_rule": {
+        "rule_number": "14",
+        "summary": "for each tile-index entry, evaluated in order: (a) offset MUST be 4-aligned; (b) offset ≥ tile_blob_start; (c) offset < extensions_offset; (d) length ≤ extensions_offset − offset (§ 11 #14)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "file[304..308] (entry 0 `offset`, u32 LE) 312 → 376; CRC recomputed."
+    },
+    {
+      "name": "neg-14d-length-overrun",
+      "kind": "negative",
+      "path": "negative/neg-14d-length-overrun.rawtiles",
+      "description": "Pack with entry 0's `offset` bumped 312 → 316 while length stays at 64. 316 is aligned and within bounds, so #14a/b/c stay quiet; 64 > 376 − 316 = 60 fires #14d. Length still equals tile_dim_px² so #16 stays quiet. Rule #32 also fires. CRC recomputed.",
+      "spec_refs": [
+        "§ 5.1"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "69baec76f3e7b7b43100e4e04dde6f11b11ca1987a46b3025123e7d0ad6c1be5",
+      "expected_reject_rule": {
+        "rule_number": "14",
+        "summary": "for each tile-index entry, evaluated in order: (a) offset MUST be 4-aligned; (b) offset ≥ tile_blob_start; (c) offset < extensions_offset; (d) length ≤ extensions_offset − offset (§ 11 #14)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "file[304..308] (entry 0 `offset`, u32 LE) 312 → 316; CRC recomputed."
+    },
+    {
       "name": "neg-15a-z-above-zmax",
       "kind": "negative",
       "path": "negative/neg-15a-z-above-zmax.rawtiles",
