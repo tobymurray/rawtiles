@@ -242,6 +242,38 @@
       "hashes_sha256": "78627ed359ed0ab84bad4cabcf66cd726901a6647346f7cb509793c9a315ed7a"
     },
     {
+      "name": "golden-png-to-pack-1tile",
+      "kind": "golden",
+      "path": "golden/golden-png-to-pack-1tile.rawtiles",
+      "description": "1-tile WebMercator/Quadtree/XYZ pack whose 4×4 tile carries the § 14.4 ABGR2222 quantiser test vector exactly: 16 pixels, 16 bytes. The module embeds the § 14.4 RGB888 input + expected ABGR2222 output as Python constants and asserts the canonical § 9.1.1 quantiser reproduces the expected output before any pack is emitted. The PNG-decode step is writer-implementation-specific per § 14.1 and is out of scope for the corpus; this fixture pins the deterministic post-decode RGB888 → ABGR2222 → pack path.",
+      "spec_refs": [
+        "§ 9.1.1",
+        "§ 14.3",
+        "§ 14.4",
+        "§ 14.5"
+      ],
+      "expected_outcome": "accept",
+      "pack_sha256": "0ec8644e1298bab2f8bbb601392a363867f6680a29cb4a79f1c75272fc2b21c3",
+      "hashes_path": "golden/golden-png-to-pack-1tile.hashes",
+      "hashes_sha256": "2ec581911caeeba55022a49b72b8d8d7ece23469d2af6eaa8af19d573ee17271"
+    },
+    {
+      "name": "golden-png-to-pack-5tiles",
+      "kind": "golden",
+      "path": "golden/golden-png-to-pack-5tiles.rawtiles",
+      "description": "5-tile WebMercator/Quadtree/XYZ pack at z=0..1 (1 + 4 tiles, 4×4 px each). The z=0 tile uses § 14.4's RGB888 test vector; the four z=1 tiles are solid red/green/blue/white. All tiles are quantised via § 9.1.1 from RGB888 inputs embedded in the generator module. Pairs with golden-png-to-pack-1tile to exercise the multi-tile quantiser path. File size 476 bytes.",
+      "spec_refs": [
+        "§ 9.1.1",
+        "§ 14.3",
+        "§ 14.4",
+        "§ 14.5"
+      ],
+      "expected_outcome": "accept",
+      "pack_sha256": "87abd3b400ae6ea0f5bff2681de7fa78336cbfdc01ad58330f919e2c6cd86ad7",
+      "hashes_path": "golden/golden-png-to-pack-5tiles.hashes",
+      "hashes_sha256": "fafcc11919afeefd8088217d89facc30ad74c0d9a01e20e72b22384c2e14f33b"
+    },
+    {
       "name": "neg-01-short-file",
       "kind": "negative",
       "path": "negative/neg-01-short-file.rawtiles",

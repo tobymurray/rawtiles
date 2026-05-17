@@ -32,8 +32,8 @@ Each pack ships with a sibling `<pack>.hashes` file per § 14.5.
 - [x] `golden-grid.rawtiles` — regular full grid at a single zoom; the "largest single-zoom layout" of § 14.3
 - [x] `golden-pyramid.rawtiles` — multi-zoom; exercises every populated slot of the `zoom_offsets[24]` indirection
 - [x] `golden-attr.rawtiles` — exercises extension framing/padding and ATTR multi-source ordering per § 12.1 / Appendix A.4
-- [ ] `golden-png-to-pack-1tile.rawtiles` — end-to-end PNG → quantiser → pack pipeline; one tile
-- [ ] `golden-png-to-pack-5tiles.rawtiles` — same pipeline, multi-tile; pins resample/alpha-handling output
+- [x] `golden-png-to-pack-1tile.rawtiles` — 1 tile carrying the § 14.4 quantiser test vector; module self-tests § 9.1.1 against § 14.4's published RGB888↔ABGR2222 pair. PNG decode step is writer-implementation-specific per § 14.1 and out of scope; the corpus pins the post-decode RGB888 → quantiser → pack path.
+- [x] `golden-png-to-pack-5tiles.rawtiles` — multi-tile companion at z=0..1 (1 + 4 tiles); z=0 carries § 14.4 vector, z=1 carries solid red/green/blue/white. Exercises the multi-tile quantiser path that the 1-tile fixture cannot.
 
 ### Gap-fillers (not named in spec, but the v1 surface needs them)
 - [x] `golden-smallest.rawtiles` — minimum-legal non-empty pack (1 tile, no extensions); the "smallest non-empty pack" of § 14.3
@@ -181,5 +181,5 @@ Pick representative violations rather than every sub-condition — one fixture p
 
 ## Totals
 
-- **Golden corpus:** 13 packs shipped of 17 planned (4 spec-named + 7 gap-fillers + 2 accept-path; remaining: 1 spec-named pyramid is shipped; PNG-pipeline pair, `golden-zmax`, and `golden-canonical-uuid` are deferred — each needs a non-trivial dependency: PNG quantiser, § 4.9 WebMercator-formula bbox derivation, or Appendix A UUID derivation).
+- **Golden corpus:** 17 packs (all planned fixtures shipped). Covers smallest non-empty (§ 14.3), full grid, multi-zoom pyramid, max-zoom (z=23), TMS axis, metadata-only Quadtree, LocalLinear+AFFN SingleImage, ATTR multi-source ordering, multi-locale NAME, supersedes_uuid, format_version_minor=1, ancillary lowercase tag, directional orientation (intra-tile + 4×4 mosaic), Appendix A UUID derivation, and the § 14.4 quantiser test-vector (1-tile + 5-tile).
 - **Negative corpus:** 75 fixtures across 35 of the 38 reject rules (#1–#38). § 11 #4 / #21 are accept-path (covered by goldens); § 11 #30 requires a 4 GiB pack (no fixture). The three reject rules without fixtures are entangled-but-skipped sub-cases (#23a, #23e) or spec-amendment-blocked (#38h, #38i).
