@@ -805,6 +805,74 @@
       "mutation": "header[96..100] (zoom_offsets[0].offset, u32 LE) 0 → 292; CRC recomputed."
     },
     {
+      "name": "neg-18a-extoff-misaligned",
+      "kind": "negative",
+      "path": "negative/neg-18a-extoff-misaligned.rawtiles",
+      "description": "Pack with extensions_offset 376 → 377 (not 4-aligned). Sub-clause (a) fires; (b) and (d) also fire since 377 > 376 and 377 ≠ 376 = expected sum. Any of the three rejections satisfies the test. CRC recomputed.",
+      "spec_refs": [
+        "§ 4.13"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "2a485ba9e996b3436699b5056d6e1407fd578006cb68ce463e22746bcaad2694",
+      "expected_reject_rule": {
+        "rule_number": "18",
+        "summary": "extensions_offset MUST be 4-aligned, ≤ file_size − 4, ≥ tile_blob_start, AND equal tile_blob_start + Σ padded_length(i) over every tile-index entry (§ 4.13 + § 11 #18)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "file[288..292] (extensions_offset, u32 LE) 376 → 377; CRC recomputed."
+    },
+    {
+      "name": "neg-18b-extoff-past-crc",
+      "kind": "negative",
+      "path": "negative/neg-18b-extoff-past-crc.rawtiles",
+      "description": "Pack with extensions_offset 376 → 380 (aligned, but past file_size − 4 = 376). Sub-clause (b) fires; (d) also fires since 380 ≠ expected. CRC recomputed.",
+      "spec_refs": [
+        "§ 4.13"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "b58c4dfb290cdc33b2cbd83b1c36fd8cdc97277dc6ffaaa9844ccaa1061fc11d",
+      "expected_reject_rule": {
+        "rule_number": "18",
+        "summary": "extensions_offset MUST be 4-aligned, ≤ file_size − 4, ≥ tile_blob_start, AND equal tile_blob_start + Σ padded_length(i) over every tile-index entry (§ 4.13 + § 11 #18)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "file[288..292] (extensions_offset, u32 LE) 376 → 380; CRC recomputed."
+    },
+    {
+      "name": "neg-18c-extoff-below-blob",
+      "kind": "negative",
+      "path": "negative/neg-18c-extoff-below-blob.rawtiles",
+      "description": "Pack with extensions_offset 376 → 308 (aligned and ≤ file_size − 4, but below tile_blob_start = 312). Sub-clause (c) fires; (d) also fires since 308 ≠ expected. CRC recomputed.",
+      "spec_refs": [
+        "§ 4.13"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "e500af0a1d4df9549c6ece22a86fdb567c766f9cc0fc8efa454da96ca4639ec1",
+      "expected_reject_rule": {
+        "rule_number": "18",
+        "summary": "extensions_offset MUST be 4-aligned, ≤ file_size − 4, ≥ tile_blob_start, AND equal tile_blob_start + Σ padded_length(i) over every tile-index entry (§ 4.13 + § 11 #18)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "file[288..292] (extensions_offset, u32 LE) 376 → 308; CRC recomputed."
+    },
+    {
+      "name": "neg-18d-extoff-wrong-sum",
+      "kind": "negative",
+      "path": "negative/neg-18d-extoff-wrong-sum.rawtiles",
+      "description": "Pack with extensions_offset 376 → 372: aligned, ≥ tile_blob_start = 312, ≤ file_size − 4 = 376, but 372 ≠ tile_blob_start + Σ padded_length = 312 + 64 = 376. Sub-clauses (a), (b), (c) all stay quiet; only (d) fires. The only fixture in this cluster that isolates a single sub-clause of rule #18. CRC recomputed.",
+      "spec_refs": [
+        "§ 4.13"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "1d81918c5980959497ec58c75533cc73b08fbec2fba66b8f4f05708619c93913",
+      "expected_reject_rule": {
+        "rule_number": "18",
+        "summary": "extensions_offset MUST be 4-aligned, ≤ file_size − 4, ≥ tile_blob_start, AND equal tile_blob_start + Σ padded_length(i) over every tile-index entry (§ 4.13 + § 11 #18)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "file[288..292] (extensions_offset, u32 LE) 376 → 372; CRC recomputed."
+    },
+    {
       "name": "neg-19a-section-overruns",
       "kind": "negative",
       "path": "negative/neg-19a-section-overruns.rawtiles",

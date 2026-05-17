@@ -115,10 +115,10 @@ Each fixture differs from a known-good golden by **one** byte/field. Every file 
 - [x] `neg-17c-offset-nonzero-empty.rawtiles` — `zoom_offsets[z] = (nonzero, 0)`
 
 ### extensions_offset (§ 4.13) [#18]
-- [ ] `neg-18a-extoff-misaligned.rawtiles` — `extensions_offset` not 4-aligned
-- [ ] `neg-18b-extoff-past-crc.rawtiles` — `extensions_offset > file_size − 4`
-- [ ] `neg-18c-extoff-below-blob.rawtiles` — `extensions_offset < tile_blob_start`
-- [ ] `neg-18d-extoff-wrong-sum.rawtiles` — `extensions_offset` doesn't match the padded-length sum
+- [x] `neg-18a-extoff-misaligned.rawtiles` — `extensions_offset` not 4-aligned
+- [x] `neg-18b-extoff-past-crc.rawtiles` — `extensions_offset > file_size − 4`
+- [x] `neg-18c-extoff-below-blob.rawtiles` — `extensions_offset < tile_blob_start`
+- [x] `neg-18d-extoff-wrong-sum.rawtiles` — `extensions_offset` doesn't match the padded-length sum
 
 ### Extension framing (§ 7.1) [#19]
 - [x] `neg-19a-section-overruns.rawtiles` — section `tag+8+length+pad` extends past `file_size − 4`
