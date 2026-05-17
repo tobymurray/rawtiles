@@ -1028,6 +1028,23 @@
       "mutation": "file[324..328] (entry 1 `offset`, u32 LE) 676 → 672; CRC recomputed."
     },
     {
+      "name": "neg-34-affn-length",
+      "kind": "negative",
+      "path": "negative/neg-34-affn-length.rawtiles",
+      "description": "Pack derived from golden-singleimage-affn by dropping the last AFFN coefficient and updating the section's length field 48 → 40. Section framing and CRC remain consistent (file truncated to match), so rule #19 stays quiet and rule #34 is the lone violation. file_size 436 → 428.",
+      "spec_refs": [
+        "§ 7.3"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "8c5fc82c8045ee4e5157e795a211bb117b84059a1bd61338651ecdab75b0fb32",
+      "expected_reject_rule": {
+        "rule_number": "34",
+        "summary": "AFFN section's length field MUST be 48 (§ 7.3 + § 11 #34)"
+      },
+      "derived_from": "golden-singleimage-affn",
+      "mutation": "AFFN length field (file[380..384]) 48 → 40; AFFN payload (file[384..432]) truncated from 48 to 40 bytes (drops coef `f`); file_size 436 → 428; CRC recomputed over the new body."
+    },
+    {
       "name": "neg-35a-affn-nan",
       "kind": "negative",
       "path": "negative/neg-35a-affn-nan.rawtiles",
@@ -1060,6 +1077,23 @@
       },
       "derived_from": "golden-singleimage-affn",
       "mutation": "bytes 424..432 (AFFN payload coef[5] `f`, IEEE-754 binary64 LE) 1.0 → 0x7FF0_0000_0000_0000 (+∞); CRC recomputed."
+    },
+    {
+      "name": "neg-36-affn-with-webmercator",
+      "kind": "negative",
+      "path": "negative/neg-36-affn-with-webmercator.rawtiles",
+      "description": "WebMercator/Quadtree pack with a valid 48-byte AFFN extension section (six finite zero coefficients). AFFN must only appear when projection = LocalLinear (§ 7.3); its presence here trips rule #36. Rules #34 (length = 48), #35 (coefs finite), and #8 (legal proj×scheme pair) all stay quiet. file_size 440.",
+      "spec_refs": [
+        "§ 7.3"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "3143247f572cc20219828a7c0634e3e0af8c429ba284afc09885bb0cdf6cf878",
+      "expected_reject_rule": {
+        "rule_number": "36",
+        "summary": "AFFN MUST NOT appear in packs whose projection is not LocalLinear (§ 7.3 + § 11 #36)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "Built from scratch in the shape of golden-smallest (WebMercator/Quadtree/XYZ, 1 tile at 0,0,0) with a valid AFFN section appended at extensions_offset = 376 (tag + length=48 + six finite zero f64 coefficients). file_size 380 → 436."
     },
     {
       "name": "neg-38a-srcd-bad-utf8",

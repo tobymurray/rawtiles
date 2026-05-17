@@ -134,10 +134,10 @@ Each fixture differs from a known-good golden by **one** byte/field. Every file 
 
 ### AFFN (§ 7.3) [#22, #34, #35, #36]
 - [x] `neg-22-locallinear-no-affn.rawtiles` — `projection = LocalLinear` and no AFFN section [#22]
-- [ ] `neg-34-affn-length-not-48.rawtiles` — AFFN `length = 40` [#34]
+- [x] `neg-34-affn-length.rawtiles` — AFFN `length = 40` [#34]
 - [x] `neg-35a-affn-nan.rawtiles` — AFFN coefficient is NaN [#35]
 - [x] `neg-35b-affn-inf.rawtiles` — AFFN coefficient is +∞ [#35]
-- [ ] `neg-36-affn-in-webmerc.rawtiles` — AFFN present with `projection ≠ LocalLinear` [#36]
+- [x] `neg-36-affn-with-webmercator.rawtiles` — AFFN present with `projection ≠ LocalLinear` [#36]
 
 ### NAME (§ 7.4) [#26, #37]
 - [ ] `neg-26a-name-payload-empty.rawtiles` — `NAME` payload length = 0 [#26]

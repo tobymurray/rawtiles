@@ -63,7 +63,9 @@ if __package__ in (None, ""):
         neg_29a_duplicate_attr,
         neg_31_quadtree_xy,
         neg_32_tile_placement,
+        neg_34_affn_length,
         neg_35_affn_nonfinite,
+        neg_36_affn_with_webmercator,
         neg_38_attr_text,
     )
 else:
@@ -109,7 +111,9 @@ else:
         neg_29a_duplicate_attr,
         neg_31_quadtree_xy,
         neg_32_tile_placement,
+        neg_34_affn_length,
         neg_35_affn_nonfinite,
+        neg_36_affn_with_webmercator,
         neg_38_attr_text,
     )
 
@@ -156,7 +160,9 @@ GENERATORS = [
     neg_29a_duplicate_attr,
     *neg_31_quadtree_xy.FIXTURES,
     *neg_32_tile_placement.FIXTURES,
+    neg_34_affn_length,
     *neg_35_affn_nonfinite.FIXTURES,
+    neg_36_affn_with_webmercator,
     *neg_38_attr_text.FIXTURES,
 ]
 SPEC_VERSION = "0.1"
