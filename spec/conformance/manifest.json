@@ -460,6 +460,74 @@
       "mutation": "file[295] (tile-index entry 0 byte 3, reserved) 0 → 1; CRC recomputed."
     },
     {
+      "name": "neg-13b-xy-not-strict",
+      "kind": "negative",
+      "path": "negative/neg-13b-xy-not-strict.rawtiles",
+      "description": "Pack derived from golden-grid by swapping entry 0's and entry 1's `y` LSBs, yielding the (x, y) sequence `(0,1), (0,0), (0,2), ...`. (0,1) > (0,0) breaks strict ascending between adjacent entries. Offsets and counts are unchanged so rules #14, #17, and #32 stay quiet; CRC recomputed.",
+      "spec_refs": [
+        "§ 5.2"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "5ddf3cfa69bf2be9da0de3fd03abc3f630c63ebfa073f7b4b678c1d274873299",
+      "expected_reject_rule": {
+        "rule_number": "13",
+        "summary": "tile-index entries MUST be sorted ascending by (z, x, y): z non-decreasing across all entries; within each zoom, (x, y) strictly ascending lexicographically (forbids duplicate triples and underpins § 5.3's binary search) (§ 11 #13)"
+      },
+      "derived_from": "golden-grid",
+      "mutation": "file[300] (entry 0 `y` LSB) 0x00 → 0x01 and file[320] (entry 1 `y` LSB) 0x01 → 0x00 (atomic swap); CRC recomputed."
+    },
+    {
+      "name": "neg-13c-duplicate-zxy",
+      "kind": "negative",
+      "path": "negative/neg-13c-duplicate-zxy.rawtiles",
+      "description": "Pack derived from golden-grid by setting entry 1's `y` LSB to 0, so entries 0 and 1 are both `(z=2, x=0, y=0)`. Duplicate (z, x, y) violates the *strict* part of strict-ascending; CRC recomputed.",
+      "spec_refs": [
+        "§ 5.2"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "11f49bbdf1a9d634ca122d6f5248c35d32329fd77c69e23f6f4311b88fc0b1aa",
+      "expected_reject_rule": {
+        "rule_number": "13",
+        "summary": "tile-index entries MUST be sorted ascending by (z, x, y): z non-decreasing across all entries; within each zoom, (x, y) strictly ascending lexicographically (forbids duplicate triples and underpins § 5.3's binary search) (§ 11 #13)"
+      },
+      "derived_from": "golden-grid",
+      "mutation": "file[320] (entry 1 `y` LSB) 0x01 → 0x00; CRC recomputed."
+    },
+    {
+      "name": "neg-15a-z-above-zmax",
+      "kind": "negative",
+      "path": "negative/neg-15a-z-above-zmax.rawtiles",
+      "description": "Pack derived from golden-smallest with entry 0 promoted to z = 1 and zoom_offsets migrated from slot 0 to slot 1 to match. Header zoom_max stays at 0, so the entry's z = 1 > zoom_max = 0 trips rule #15. The coordinated zoom_offsets shift keeps rule #17 (directory consistency) quiet; CRC recomputed.",
+      "spec_refs": [
+        "§ 4.8"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "263a2d3e19e63bc2c0d26a7c0a7b0b88399c412537144adea66f6d9987124ed4",
+      "expected_reject_rule": {
+        "rule_number": "15",
+        "summary": "entry z MUST satisfy zoom_min ≤ z ≤ zoom_max (§ 4.8 + § 11 #15)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "file[292] (entry 0 `z`) 0 → 1; file[96..104] (zoom_offsets[0]) (292, 1) → (0, 0); file[104..112] (zoom_offsets[1]) (0, 0) → (292, 1); CRC recomputed."
+    },
+    {
+      "name": "neg-15b-z-below-zmin",
+      "kind": "negative",
+      "path": "negative/neg-15b-z-below-zmin.rawtiles",
+      "description": "Pack derived from golden-smallest by bumping both zoom_min and zoom_max to 1 while leaving entry 0 at z = 0. Entry's z = 0 < zoom_min = 1 trips rule #15. zoom_max also moves to 1 so #10 (zoom_min ≤ zoom_max) stays quiet; zoom_offsets[0] = (292, 1) still consistent with the entry at z = 0, so #17 also quiet. CRC recomputed.",
+      "spec_refs": [
+        "§ 4.8"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "440cf04eb1a670dd88425f9427badd949894313e2ad60af55eb4a037a0bed292",
+      "expected_reject_rule": {
+        "rule_number": "15",
+        "summary": "entry z MUST satisfy zoom_min ≤ z ≤ zoom_max (§ 4.8 + § 11 #15)"
+      },
+      "derived_from": "golden-smallest",
+      "mutation": "header[62] (zoom_min) 0 → 1 and header[63] (zoom_max) 0 → 1; entry 0's z stays at 0; CRC recomputed."
+    },
+    {
       "name": "neg-16-length-mismatch",
       "kind": "negative",
       "path": "negative/neg-16-length-mismatch.rawtiles",
@@ -681,6 +749,40 @@
       },
       "derived_from": "golden-attr",
       "mutation": "Appended a second ATTR section with payload 'Other source' (12 bytes) directly after the existing ATTR section; file_size 444 → 464; CRC recomputed."
+    },
+    {
+      "name": "neg-31a-x-overflow",
+      "kind": "negative",
+      "path": "negative/neg-31a-x-overflow.rawtiles",
+      "description": "Pack derived from golden-grid with the last (entry 15) tile's x bumped 3 → 4 = 2^2. Strict (x, y) order vs entry 14's (3, 3) is preserved (4 > 3), so rule #13 stays quiet; CRC recomputed.",
+      "spec_refs": [
+        "§ 5.1"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "a9fa41052dccdb300cb7c1b3f41e06fdd0ca7f409ddd6626ae8861cbaec25226",
+      "expected_reject_rule": {
+        "rule_number": "31",
+        "summary": "for tile_addressing_scheme = Quadtree, every tile-index entry MUST satisfy x < 2^z AND y < 2^z (§ 5.1 + § 11 #31)"
+      },
+      "derived_from": "golden-grid",
+      "mutation": "file[596] (entry 15 `x` LSB) 0x03 → 0x04; CRC recomputed."
+    },
+    {
+      "name": "neg-31b-y-overflow",
+      "kind": "negative",
+      "path": "negative/neg-31b-y-overflow.rawtiles",
+      "description": "Pack derived from golden-grid with the last (entry 15) tile's y bumped 3 → 4 = 2^2. (3, 4) > (3, 3) keeps strict ordering intact; CRC recomputed.",
+      "spec_refs": [
+        "§ 5.1"
+      ],
+      "expected_outcome": "reject",
+      "pack_sha256": "0480b659b21397894faf4f7d8236a8ce7ea418bad7865180caf05ecd45fabe08",
+      "expected_reject_rule": {
+        "rule_number": "31",
+        "summary": "for tile_addressing_scheme = Quadtree, every tile-index entry MUST satisfy x < 2^z AND y < 2^z (§ 5.1 + § 11 #31)"
+      },
+      "derived_from": "golden-grid",
+      "mutation": "file[600] (entry 15 `y` LSB) 0x03 → 0x04; CRC recomputed."
     },
     {
       "name": "neg-35a-affn-nan",
