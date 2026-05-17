@@ -191,6 +191,23 @@
       "hashes_sha256": "78627ed359ed0ab84bad4cabcf66cd726901a6647346f7cb509793c9a315ed7a"
     },
     {
+      "name": "golden-zmax",
+      "kind": "golden",
+      "path": "golden/golden-zmax.rawtiles",
+      "description": "1-tile WebMercator/Quadtree/XYZ pack at (z=23, x=0, y=0). The only v1 fixture exercising the maximum legal zoom (§ 11 #10), the high end of zoom_offsets[24] (only slot 23 populated), and the non-canonical § 4.9 bbox derivation: `lon_east` via exact-i64 division + banker's rounding, `lat_south` via the libm-dependent atan/sinh path noted in § 14.1's deterministic-surface clause. The y=0 / x=0 special cases still apply to `lat_north` and `lon_west`.",
+      "spec_refs": [
+        "§ 4.8",
+        "§ 4.9",
+        "§ 4.12",
+        "§ 14.1",
+        "§ 14.3"
+      ],
+      "expected_outcome": "accept",
+      "pack_sha256": "7d6adbb8aa0648b059e39986884b291b4543ca5df2a3989d21edc4cec891f56d",
+      "hashes_path": "golden/golden-zmax.hashes",
+      "hashes_sha256": "afcfa602507642e6cce19af26dd9f21632ed6ba17e3bd8960cab988e53344c2f"
+    },
+    {
       "name": "golden-names-multilocale",
       "kind": "golden",
       "path": "golden/golden-names-multilocale.rawtiles",
