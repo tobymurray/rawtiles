@@ -154,7 +154,7 @@ static bool is_valid_pixel_format(uint8_t v)
 
 static bool is_valid_compression(uint8_t v)
 {
-    return v == RAWTILES_COMPRESSION_NONE || v == RAWTILES_COMPRESSION_RLE8;
+    return v == RAWTILES_COMPRESSION_NONE || v == RAWTILES_COMPRESSION_RLE;
 }
 
 static bool is_valid_projection(uint8_t v)
@@ -818,45 +818,65 @@ rawtiles_result_t rawtiles_get_tile(rawtiles_t *rt, uint8_t z, uint32_t x,
         return io_read(&rt->io, out_buf, e_offset, e_length);
     }
 
-    if (compression == RAWTILES_COMPRESSION_RLE8) {
-        /* RLE8 decoder. § 9.11.
-         * Reads encoded bytes from [e_offset, e_offset + e_length) and emits
-         * exactly decoded_size bytes to out_buf. Errors on under/overflow. */
-        size_t produced = 0;
+    if (compression == RAWTILES_COMPRESSION_RLE) {
+        /* RLE decoder. § 9.11 (v0.6) — pixel-level run-length encoding.
+         *
+         * P = bytes_per_pixel(pixel_format).
+         *   - Literal run (H ∈ [0x00, 0x7F]): payload is (H+1) pixels,
+         *     occupying (H+1) * P bytes; copy verbatim to output.
+         *   - Repeat run  (H ∈ [0x80, 0xFF]): payload is exactly one pixel
+         *     (P bytes); write that pixel ((H&0x7F)+1) times to output.
+         *
+         * Both run types emit 1..128 pixels. Decoder produces exactly
+         * decoded_size = tile_dim_px² × P bytes. */
+        size_t   produced  = 0;
         uint32_t in_cursor = e_offset;
         uint32_t in_end    = e_offset + e_length;
+        size_t   P         = bytes_per_pixel(rt->pixel_format);
+        if (P == 0 || P > 2) return RAWTILES_ERR_INTERNAL;
+
         while (produced < decoded_size) {
             if (in_cursor >= in_end)
                 return RAWTILES_ERR_RULE_16_BAD_ENTRY_LENGTH;
             uint8_t h;
             r = io_read(&rt->io, &h, in_cursor++, 1);
             if (r != RAWTILES_OK) return r;
+
+            uint32_t n_pixels = (uint32_t)(h & 0x7Fu) + 1u;     /* 1..128 */
+            uint32_t out_bytes = n_pixels * (uint32_t)P;         /* 1..256 */
+            if ((size_t)out_bytes > decoded_size - produced)
+                return RAWTILES_ERR_RULE_16_BAD_ENTRY_LENGTH;
+
             if ((h & 0x80u) == 0) {
-                /* literal run of (h+1) bytes */
-                uint32_t n = (uint32_t)h + 1u;
-                if (in_cursor + n > in_end)
+                /* literal run */
+                if ((uint32_t)out_bytes > in_end - in_cursor)
                     return RAWTILES_ERR_RULE_16_BAD_ENTRY_LENGTH;
-                if (produced + n > decoded_size)
-                    return RAWTILES_ERR_RULE_16_BAD_ENTRY_LENGTH;
-                r = io_read(&rt->io, out_buf + produced, in_cursor, n);
+                r = io_read(&rt->io, out_buf + produced, in_cursor, out_bytes);
                 if (r != RAWTILES_OK) return r;
-                in_cursor += n;
-                produced += n;
+                in_cursor += out_bytes;
+                produced  += out_bytes;
             } else {
-                /* repeat run: payload 1 byte, written (h&0x7F)+1 times */
-                if (in_cursor >= in_end)
+                /* repeat run */
+                if ((uint32_t)P > in_end - in_cursor)
                     return RAWTILES_ERR_RULE_16_BAD_ENTRY_LENGTH;
-                uint8_t b;
-                r = io_read(&rt->io, &b, in_cursor++, 1);
+                uint8_t pixel[2]; /* sized for max P in v1 */
+                r = io_read(&rt->io, pixel, in_cursor, (uint32_t)P);
                 if (r != RAWTILES_OK) return r;
-                uint32_t n = (uint32_t)(h & 0x7Fu) + 1u;
-                if (produced + n > decoded_size)
-                    return RAWTILES_ERR_RULE_16_BAD_ENTRY_LENGTH;
-                memset(out_buf + produced, b, n);
-                produced += n;
+                in_cursor += (uint32_t)P;
+                if (P == 1) {
+                    memset(out_buf + produced, pixel[0], n_pixels);
+                } else {
+                    /* P == 2: two-byte pixel; unrolled inner write. */
+                    uint8_t *dst = out_buf + produced;
+                    for (uint32_t k = 0; k < n_pixels; ++k) {
+                        dst[k * 2 + 0] = pixel[0];
+                        dst[k * 2 + 1] = pixel[1];
+                    }
+                }
+                produced += out_bytes;
             }
         }
-        /* Spec § 9.11: encoded stream is consumed exactly. Trailing bytes are
+        /* § 9.11: encoded stream is consumed exactly; trailing bytes are
          * a malformed tile. */
         if (in_cursor != in_end)
             return RAWTILES_ERR_RULE_16_BAD_ENTRY_LENGTH;

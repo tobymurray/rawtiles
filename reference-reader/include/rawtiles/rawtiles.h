@@ -1,7 +1,7 @@
 /*
  * rawtiles reference reader — public API
  *
- * Conformance target: rawtiles spec v0.5 (wire format v1.0).
+ * Conformance target: rawtiles spec v0.6 (wire format v1.0).
  *   https://github.com/tobymurray/rawtiles
  *
  * Design:
@@ -104,7 +104,7 @@ typedef enum rawtiles_pixel_format {
 
 typedef enum rawtiles_compression {
     RAWTILES_COMPRESSION_NONE = 0,
-    RAWTILES_COMPRESSION_RLE8 = 1,
+    RAWTILES_COMPRESSION_RLE  = 1, /* pixel-level RLE per § 9.11 (v0.6) */
 } rawtiles_compression_t;
 
 typedef enum rawtiles_projection {

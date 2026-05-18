@@ -1,6 +1,6 @@
 # rawtiles reference reader
 
-A v0.5-conformant C99 reader for the [rawtiles](../spec/rawtiles.md) binary
+A v0.6-conformant C99 reader for the [rawtiles](../spec/rawtiles.md) binary
 file format. Designed to be vendored into both C and C++ projects, including
 constrained-display embedded firmware (PineTime / InfiniTime class, ESP32,
 M5Stack, Cortex-M MCUs in general).
@@ -35,7 +35,7 @@ M5Stack, Cortex-M MCUs in general).
 | AFFN (#22, #34, #35, #36) | ✅ |
 | `getTile()` for ABGR2222 / None | ✅ |
 | `getTile()` for RGB565 / None | ✅ |
-| RLE8 decoder | ✅ |
+| RLE decoder | ✅ |
 | Extension iterator | ✅ |
 | Conformance corpus runner | ✅ |
 | Lazy validation mode | ⏳ planned |
@@ -106,7 +106,7 @@ rawtiles_open(&rt,
 ```
 
 The handle is `~330 bytes`. The full pack is never loaded; only the 292-byte
-header is buffered at open. Decoder state for RLE8 is O(1).
+header is buffered at open. Decoder state for RLE is O(1).
 
 ## Footprint (preliminary)
 
@@ -118,7 +118,7 @@ Cortex-M build will give different numbers — that benchmark is upcoming):
 | Compiled object (`-O2`) | ~24 KB |
 | `sizeof(rawtiles_t)` | ~330 B |
 | Stack peak (parse golden-pyramid) | TBD |
-| Stack peak (decode RLE8 tile) | TBD |
+| Stack peak (decode RLE tile) | TBD |
 
 A target-platform benchmark on Cortex-M0+ is the next milestone after
 this v0.1 cut.

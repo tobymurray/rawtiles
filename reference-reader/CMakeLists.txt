@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(rawtiles_reference_reader
         VERSION 0.1.0
-        DESCRIPTION "rawtiles spec v0.5 reference reader (C99)"
+        DESCRIPTION "rawtiles spec v0.6 reference reader (C99)"
         LANGUAGES C)
 
 set(CMAKE_C_STANDARD 99)
