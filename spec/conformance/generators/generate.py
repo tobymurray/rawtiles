@@ -210,7 +210,7 @@ GENERATORS = [
     *neg_38_attr_text.FIXTURES,
     neg_38i_attr_empty,
 ]
-SPEC_VERSION = "0.5"
+SPEC_VERSION = "0.6"
 MANIFEST_VERSION = 1
 GENERATED_BY = "rawtiles-conformance generators v1"
 
