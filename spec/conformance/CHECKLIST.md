@@ -69,12 +69,12 @@ Each fixture differs from a known-good golden by **one** byte/field. Every file 
 
 ### Enums (§ 8) [#7]
 - [x] `neg-07a-pixfmt-0.rawtiles` — reserved `pixel_format = 0`
-- [x] `neg-07b-pixfmt-2.rawtiles` — reserved `pixel_format = 2` (`L4`)
+- [x] `neg-07b-pixfmt-5.rawtiles` — reserved `pixel_format = 5` (`L4`; was `2` at v0.3, moved when v0.4 allocated `2` to `RGB565`)
 - [x] `neg-07c-proj-0.rawtiles` — reserved `projection = 0`
 - [x] `neg-07d-proj-2.rawtiles` — reserved `projection = 2` (equirectangular)
 - [x] `neg-07e-addr-0.rawtiles` — reserved `tile_addressing_scheme = 0`
 - [x] `neg-07f-axis-0.rawtiles` — reserved `tile_axis_convention = 0`
-- [x] `neg-07g-comp-1.rawtiles` — reserved `compression = 1` (LZ4)
+- [x] `neg-07g-comp-3.rawtiles` — reserved `compression = 3` (LZ4; was `1` at v0.3, moved when v0.4 allocated `1` to `RLE8`)
 
 ### Legal enum pair (§ 8.6) [#8]
 - [x] `neg-08a-webmerc-singleimage.rawtiles` — `(WebMercator, SingleImage)`

@@ -1,5 +1,5 @@
 {
-  "spec_version": "0.3",
+  "spec_version": "0.5",
   "manifest_version": 1,
   "generated_by": "rawtiles-conformance generators v1",
   "fixtures": [
@@ -377,21 +377,21 @@
       "mutation": "pixel_format byte (file offset 56) 1 → 0 (reserved); CRC recomputed."
     },
     {
-      "name": "neg-07b-pixfmt-2",
+      "name": "neg-07b-pixfmt-5",
       "kind": "negative",
-      "path": "negative/neg-07b-pixfmt-2.rawtiles",
-      "description": "Pack with pixel_format = 2 (reserved, L4 indexed); all other fields valid; CRC recomputed.",
+      "path": "negative/neg-07b-pixfmt-5.rawtiles",
+      "description": "Pack with pixel_format = 5 (reserved, L4 indexed); all other fields valid; CRC recomputed.",
       "spec_refs": [
         "§ 8.1"
       ],
       "expected_outcome": "reject",
-      "pack_sha256": "56bb91a5fc850f3b87db55f7dea6f09ff5495b0aad60d38767f848a5e024e00b",
+      "pack_sha256": "e966760d70763dec4cda970a4baf86489b2896a9005add7e784ffb2ff776c461",
       "expected_reject_rule": {
         "rule_number": "7",
         "summary": "any unknown pixel_format, projection, tile_addressing_scheme, tile_axis_convention, or compression byte MUST be rejected (§ 8)"
       },
       "derived_from": "golden-smallest",
-      "mutation": "pixel_format byte (file offset 56) 1 → 2 (reserved, L4 indexed); CRC recomputed."
+      "mutation": "pixel_format byte (file offset 56) 1 → 5 (reserved, L4 indexed); CRC recomputed."
     },
     {
       "name": "neg-07c-proj-0",
@@ -462,21 +462,21 @@
       "mutation": "tile_axis_convention byte (file offset 59) 1 → 0 (reserved); CRC recomputed."
     },
     {
-      "name": "neg-07g-comp-1",
+      "name": "neg-07g-comp-3",
       "kind": "negative",
-      "path": "negative/neg-07g-comp-1.rawtiles",
-      "description": "Pack with compression = 1 (reserved, LZ4); all other fields valid; CRC recomputed.",
+      "path": "negative/neg-07g-comp-3.rawtiles",
+      "description": "Pack with compression = 3 (reserved, LZ4); all other fields valid; CRC recomputed.",
       "spec_refs": [
         "§ 8.5"
       ],
       "expected_outcome": "reject",
-      "pack_sha256": "dad1068d90dd4484bb0f5239985d5421b02088add0d2bd03394e416eb0497c3e",
+      "pack_sha256": "a21372d4fc8f921a8d2344de9196357c2ac238fe8ed99511896a780633e94e85",
       "expected_reject_rule": {
         "rule_number": "7",
         "summary": "any unknown pixel_format, projection, tile_addressing_scheme, tile_axis_convention, or compression byte MUST be rejected (§ 8)"
       },
       "derived_from": "golden-smallest",
-      "mutation": "compression byte (file offset 293) 0 → 1 (reserved, LZ4); CRC recomputed."
+      "mutation": "compression byte (file offset 293) 0 → 3 (reserved, LZ4); CRC recomputed."
     },
     {
       "name": "neg-08a-webmerc-singleimage",
